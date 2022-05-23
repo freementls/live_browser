@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)https://wiki.wesnoth.org/WML_for_Complete_Beginners -->
+<html class="client-js flexbox flexwrap" lang="en" dir="ltr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>WML for Complete Beginners - The Battle for Wesnoth Wiki</title>
+<script>document.documentElement.className = document.documentElement.className.replace( /(^|\s)client-nojs(\s|$)/, "$1client-js$2" );</script>
+<script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"WML_for_Complete_Beginners","wgTitle":"WML for Complete Beginners","wgCurRevisionId":67934,"wgRevisionId":67934,"wgArticleId":5083,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["WML for Complete Beginners"],"wgBreakFrames":false,"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgMonthNamesShort":["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"wgRelevantPageName":"WML_for_Complete_Beginners","wgRelevantArticleId":5083,"wgRequestId":"908c1ddf102878d2a5888f0a","wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgWikiEditorEnabledModules":[]});mw.loader.state({"site.styles":"ready","noscript":"ready","user.styles":"ready","user":"ready","user.options":"ready","user.tokens":"loading","ext.CookieWarning.styles":"ready","mediawiki.legacy.shared":"ready","mediawiki.legacy.commonPrint":"ready","mediawiki.sectionAnchor":"ready"});mw.loader.implement("user.tokens@15m2fsb",function($,jQuery,require,module){/*@nomin*/mw.user.tokens.set({"editToken":"+\\","patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});
+});mw.loader.load(["site","mediawiki.page.startup","mediawiki.user","mediawiki.hidpi","mediawiki.page.ready","mediawiki.searchSuggest","ext.CookieWarning","skins.wesmere.js"]);});</script>
+<link rel="stylesheet" href="./WML for Complete Beginners - The Battle for Wesnoth Wiki_files/load.php">
+<script async="" src="./WML for Complete Beginners - The Battle for Wesnoth Wiki_files/load(1).php"></script>
+<style>
+.suggestions{overflow:hidden;position:absolute;top:0;left:0;width:0;border:0;z-index:1099;padding:0;margin:-1px 0 0 0}.suggestions-special{position:relative;background-color:#fff;cursor:pointer;border:1px solid #a2a9b1;margin:0;margin-top:-2px;display:none;padding:0.25em 0.25em;line-height:1.25em}.suggestions-results{background-color:#fff;cursor:pointer;border:1px solid #a2a9b1;padding:0;margin:0}.suggestions-result{color:#000;margin:0;line-height:1.5em;padding:0.01em 0.25em;text-align:left; overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.suggestions-result-current{background-color:#2a4b8d;color:#fff}.suggestions-special .special-label{color:#72777d;text-align:left}.suggestions-special .special-query{color:#000;font-style:italic;text-align:left}.suggestions-special .special-hover{background-color:#c8ccd1}.suggestions-result-current .special-label,.suggestions-result-current .special-query{color:#fff}.highlight{font-weight:bold}</style><style>
+.suggestions a.mw-searchSuggest-link,.suggestions a.mw-searchSuggest-link:hover,.suggestions a.mw-searchSuggest-link:active,.suggestions a.mw-searchSuggest-link:focus{color:#000;text-decoration:none}.suggestions-result-current a.mw-searchSuggest-link,.suggestions-result-current a.mw-searchSuggest-link:hover,.suggestions-result-current a.mw-searchSuggest-link:active,.suggestions-result-current a.mw-searchSuggest-link:focus{color:#fff}.suggestions a.mw-searchSuggest-link .special-query{ overflow:hidden;text-overflow:ellipsis;white-space:nowrap}</style><meta name="ResourceLoaderDynamicStyles" content="">
+<link rel="stylesheet" href="./WML for Complete Beginners - The Battle for Wesnoth Wiki_files/load(2).php">
+<meta name="generator" content="MediaWiki 1.31.16">
+<meta name="description" content="Welcome to the WML Guide for Complete Beginners!  From here, you can get started directly by heading to the Introduction or you can continue from the chapter you left off.">
+<link rel="shortcut icon" href="https://wiki.wesnoth.org/favicon.ico">
+<link rel="search" type="application/opensearchdescription+xml" href="https://wiki.wesnoth.org/opensearch_desc.php" title="The Battle for Wesnoth Wiki (en)">
+<link rel="EditURI" type="application/rsd+xml" href="https://wiki.wesnoth.org/api.php?action=rsd">
+<link rel="alternate" type="application/atom+xml" title="The Battle for Wesnoth Wiki Atom feed" href="https://wiki.wesnoth.org/index.php?title=Special:RecentChanges&amp;feed=atom">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="./WML for Complete Beginners - The Battle for Wesnoth Wiki_files/css" type="text/css">
+<link rel="stylesheet" type="text/css" href="./WML for Complete Beginners - The Battle for Wesnoth Wiki_files/wesmere-1.1.9.css">
+<script src="./WML for Complete Beginners - The Battle for Wesnoth Wiki_files/modernizr.js"></script><script src="./WML for Complete Beginners - The Battle for Wesnoth Wiki_files/load(3).php"></script>
+<link rel="apple-touch-icon" type="image/png" href="https://www.wesnoth.org/wesmere/img/apple-touch-icon.png" sizes="180x180">
+<link rel="icon" type="image/png" href="https://www.wesnoth.org/wesmere/img/favicon-32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="https://www.wesnoth.org/wesmere/img/favicon-16.png" sizes="16x16">
+<!--[if lt IE 9]><script src="/load.php?debug=false&amp;lang=en&amp;modules=html5shiv&amp;only=scripts&amp;skin=Wesmere&amp;sync=1"></script><![endif]-->
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-WML_for_Complete_Beginners rootpage-WML_for_Complete_Beginners skin-Wesmere action-view"><div class="mw-cookiewarning-container"><div class="mw-cookiewarning-text"><span>Cookies help us deliver our services. By using our services, you agree to our use of cookies.</span><form method="POST"><input name="disablecookiewarning" class="mw-cookiewarning-dismiss" type="submit" value="OK"></form></div></div>
+<div id="main">
+
+<div id="nav" role="banner">
+<div class="centerbox">
+
+	<div id="logo">
+		<a href="https://www.wesnoth.org/" aria-label="Wesnoth logo"></a>
+	</div>
+
+	<ul id="navlinks">
+		<li><a href="https://www.wesnoth.org/">Home</a></li>
+		<li><a href="https://forums.wesnoth.org/viewforum.php?f=62">News</a></li>
+		<li><a href="https://wiki.wesnoth.org/Play">Play</a></li>
+		<li><a href="https://wiki.wesnoth.org/Create">Create</a></li>
+		<li><a href="https://forums.wesnoth.org/">Forums</a></li>
+		<li><a href="https://wiki.wesnoth.org/Project">About</a></li>
+	</ul>
+
+	<div id="sitesearch" role="search">
+		<form method="get" action="https://wiki.wesnoth.org/index.php">
+			<input id="searchbox" type="search" name="search" placeholder="Search" value="" title="Search this wiki [ctrl-option-f]" accesskey="f">
+			<span id="searchbox-controls">
+				<button id="search-go" class="search-button" type="submit" title="Search">
+					<i class="search-icon" aria-hidden="true"></i>
+					<span class="sr-label">Search this wiki</span>
+				</button>
+			</span>
+		</form>
+	</div>
+
+	<div class="reset"></div>
+</div>
+</div>
+
+
+<div id="content" class="mw-content" role="main">
+	<a id="top"></a>
+	<div id="wm-wiki-toolbar" role="toolbar"><ul class="wm-toolbar" role="toolbar" aria-label="Wiki"><li id="ca-nstab-main" class="selected"><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners" role="button" title="View the content page [ctrl-option-c]" accesskey="c"><i class="wm-toolbar-icon" aria-hidden="true"></i><span class="sr-label">Page</span></a></li><li id="ca-talk" class="new"><a href="https://wiki.wesnoth.org/index.php?title=Talk:WML_for_Complete_Beginners&amp;action=edit&amp;redlink=1" rel="discussion" role="button" title="Discussion about the content page (page does not exist) [ctrl-option-t]" accesskey="t"><i class="wm-toolbar-icon" aria-hidden="true"></i><span class="sr-label">Discussion</span></a></li><li id="ca-history"><a href="https://wiki.wesnoth.org/index.php?title=WML_for_Complete_Beginners&amp;action=history" role="button" title="Past revisions of this page [ctrl-option-h]" accesskey="h"><i class="wm-toolbar-icon" aria-hidden="true"></i><span class="sr-label">History</span></a></li><li id="wm-places-menu" class="wm-dropdown"><a class="wm-dropdown-trigger" href="https://wiki.wesnoth.org/WML_for_Complete_Beginners#" title="Places" role="button"><i class="wm-toolbar-icon" aria-hidden="true"></i><span class="sr-label">Places</span><i class="wm-toolbar-dropdown-marker" aria-hidden="true"></i></a><ul class="wm-dropdown-menu" role="menu"><li id="n-mainpage-description"><a href="https://wiki.wesnoth.org/Main_Page" role="menuitem" title="Visit the main page [ctrl-option-z]" accesskey="z"><i class="wm-toolbar-icon" aria-hidden="true"></i><span>Main page</span></a></li><li id="n-recentchanges"><a href="https://wiki.wesnoth.org/Special:RecentChanges" role="menuitem" title="A list of recent changes in the wiki [ctrl-option-r]" accesskey="r"><i class="wm-toolbar-icon" aria-hidden="true"></i><span>Recent changes</span></a></li><li id="n-randompage"><a href="https://wiki.wesnoth.org/Special:Random" role="menuitem" title="Load a random page [ctrl-option-x]" accesskey="x"><i class="wm-toolbar-icon" aria-hidden="true"></i><span>Random page</span></a></li><li id="n-help-mediawiki"><a href="https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Contents" role="menuitem"><i class="wm-toolbar-icon" aria-hidden="true"></i><span>Help about MediaWiki</span></a></li></ul></li><li id="wm-advanced-menu" class="wm-dropdown"><a class="wm-dropdown-trigger" href="https://wiki.wesnoth.org/WML_for_Complete_Beginners#" title="Advanced" role="button"><i class="wm-toolbar-icon" aria-hidden="true"></i><span class="sr-label">Advanced</span><i class="wm-toolbar-dropdown-marker" aria-hidden="true"></i></a><ul class="wm-dropdown-menu" role="menu"><li id="ca-viewsource"><a href="https://wiki.wesnoth.org/index.php?title=WML_for_Complete_Beginners&amp;action=edit" role="menuitem" title="This page is protected.
+You can view its source [ctrl-option-e]" accesskey="e"><i class="wm-toolbar-icon" aria-hidden="true"></i><span>View source</span></a></li><li id="t-whatlinkshere"><a href="https://wiki.wesnoth.org/Special:WhatLinksHere/WML_for_Complete_Beginners" role="menuitem" title="A list of all wiki pages that link here [ctrl-option-j]" accesskey="j"><i class="wm-toolbar-icon" aria-hidden="true"></i><span>What links here</span></a></li><li id="t-recentchangeslinked"><a href="https://wiki.wesnoth.org/Special:RecentChangesLinked/WML_for_Complete_Beginners" rel="nofollow" role="menuitem" title="Recent changes in pages linked from this page [ctrl-option-k]" accesskey="k"><i class="wm-toolbar-icon" aria-hidden="true"></i><span>Related changes</span></a></li><li id="t-specialpages"><a href="https://wiki.wesnoth.org/Special:SpecialPages" role="menuitem" title="A list of all special pages [ctrl-option-q]" accesskey="q"><i class="wm-toolbar-icon" aria-hidden="true"></i><span>Special pages</span></a></li><li id="t-permalink"><a href="https://wiki.wesnoth.org/index.php?title=WML_for_Complete_Beginners&amp;oldid=67934" role="menuitem" title="Permanent link to this revision of the page"><i class="wm-toolbar-icon" aria-hidden="true"></i><span>Permanent link</span></a></li><li id="t-info"><a href="https://wiki.wesnoth.org/index.php?title=WML_for_Complete_Beginners&amp;action=info" role="menuitem" title="More information about this page"><i class="wm-toolbar-icon" aria-hidden="true"></i><span>Page information</span></a></li></ul></li></ul><ul class="wm-toolbar" role="toolbar" aria-label="User"><li id="wm-account-menu" class="wm-dropdown"><a class="wm-dropdown-trigger" href="https://wiki.wesnoth.org/WML_for_Complete_Beginners#" title="Your account" role="button"><i class="wm-toolbar-icon" aria-hidden="true"></i><span class="sr-label">Not logged in</span><i class="wm-toolbar-dropdown-marker" aria-hidden="true"></i></a><ul class="wm-dropdown-menu" role="menu"><li id="pt-login"><a href="https://wiki.wesnoth.org/index.php?title=Special:UserLogin&amp;returnto=WML+for+Complete+Beginners" role="menuitem" title="You are encouraged to log in; however, it is not mandatory [ctrl-option-o]" accesskey="o"><i class="wm-toolbar-icon" aria-hidden="true"></i><span>Log in</span></a></li></ul></li></ul></div> <!-- wm-wiki-toolbar -->	<h1 class="firstHeading" lang="en">WML for Complete Beginners</h1>
+
+	
+	<div id="bodyContent">
+					<div id="siteSub">From The Battle for Wesnoth Wiki</div>
+				<div id="contentSub"></div>
+				
+		<!-- start wikipage -->
+		<div id="mw-content-text" lang="en" dir="ltr" class="mw-content-ltr"><div class="mw-parser-output"><div class="wikilangbox">
+<div class="wikilangs-caption" title="Other languages"><a href="https://wiki.wesnoth.org/Template:Translations" title="Template:Translations"><i class="fa fa-2x fa-globe"></i><span class="sr-label">Other languages:</span></a></div>
+<div class="wikilangs">
+<ul><li><a class="mw-selflink selflink">English</a></li><li><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners/zh-Hans" title="WML for Complete Beginners/zh-Hans">简体中文</a></li></ul>
+</div>
+</div> 
+<p><br>
+Welcome to the WML Guide for Complete Beginners!  From here, you can get started directly by heading to the <a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Introduction" title="WML for Complete Beginners: Introduction">Introduction</a> or you can continue from the chapter you left off.  
+</p>
+<h2><span class="mw-headline" id="Note_for_Improvements:">Note for Improvements:</span></h2>
+<p>1. Add to the numbers definition that numbers can include decimal point values (and reference the fact that WML will remove any unnecessary 0's when it performs the calculations or accesses the numerical value in question).
+</p><p>2. Finish chapters 6-11 (Partially Complete)
+</p>
+<hr>
+<h2><span class="mw-headline" id="Main_Index">Main Index</span></h2>
+<p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Introduction" title="WML for Complete Beginners: Introduction">WML_for_Complete_Beginners:_Introduction</a>
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Chapter_1" title="WML for Complete Beginners: Chapter 1">WML_for_Complete_Beginners:_Chapter_1</a> Syntax
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Chapter_2" title="WML for Complete Beginners: Chapter 2">WML_for_Complete_Beginners:_Chapter_2</a> The Userdata Directory and the Campaign Folder
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Chapter_3" title="WML for Complete Beginners: Chapter 3">WML_for_Complete_Beginners:_Chapter_3</a> The _main.cfg
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Chapter_4" title="WML for Complete Beginners: Chapter 4">WML_for_Complete_Beginners:_Chapter_4</a> Creating Your First Scenario
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Chapter_5" title="WML for Complete Beginners: Chapter 5">WML_for_Complete_Beginners:_Chapter_5</a> Events
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Chapter_6" title="WML for Complete Beginners: Chapter 6">WML_for_Complete_Beginners:_Chapter_6</a> Custom Units
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Chapter_7" title="WML for Complete Beginners: Chapter 7">WML_for_Complete_Beginners:_Chapter_7</a> Variables Introduction
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Chapter_8" title="WML for Complete Beginners: Chapter 8">WML_for_Complete_Beginners:_Chapter_8</a> Non-scalar Variables
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Chapter_9" title="WML for Complete Beginners: Chapter 9">WML_for_Complete_Beginners:_Chapter_9</a> Macros
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Chapter_10" title="WML for Complete Beginners: Chapter 10">WML_for_Complete_Beginners:_Chapter_10</a> Logic
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Chapter_11" title="WML for Complete Beginners: Chapter 11">WML_for_Complete_Beginners:_Chapter_11</a> More Logic
+</p><p><a href="https://wiki.wesnoth.org/WML_for_Complete_Beginners:_Conclusion" title="WML for Complete Beginners: Conclusion">WML_for_Complete_Beginners:_Conclusion</a>
+</p>
+<!-- 
+NewPP limit report
+Cached time: 20211207190834
+Cache expiry: 86400
+Dynamic content: false
+CPU time usage: 0.011 seconds
+Real time usage: 0.013 seconds
+Preprocessor visited node count: 186/1000000
+Preprocessor generated node count: 363/1000000
+Post‐expand include size: 1529/2097152 bytes
+Template argument size: 64/2097152 bytes
+Highest expansion depth: 5/40
+Expensive parser function count: 18/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 0/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    7.260      1 -total
+100.00%    7.260      1 Template:Translations
+ 77.12%    5.599     18 Template:TranslationsHelper
+-->
+</div>
+<!-- Saved in parser cache with key wiki-mw_:pcache:idhash:5083-0!canonical and timestamp 20211207190834 and revision id 67934
+ -->
+</div>		<!-- end wikipage -->
+
+					<div class="printfooter">
+				Retrieved from "<a dir="ltr" href="https://wiki.wesnoth.org/index.php?title=WML_for_Complete_Beginners&amp;oldid=67934">https://wiki.wesnoth.org/index.php?title=WML_for_Complete_Beginners&amp;oldid=67934</a>"			</div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="https://wiki.wesnoth.org/Special:Categories" title="Special:Categories">Category</a>: <ul><li><a href="https://wiki.wesnoth.org/Category:WML_for_Complete_Beginners" title="Category:WML for Complete Beginners">WML for Complete Beginners</a></li></ul></div></div><div id="lastmod"> This page was last edited on 20 May 2021, at 00:18.</div>		<div class="visualClear"></div>
+			</div> <!-- bodyContent -->
+
+</div> <!-- end content -->
+
+</div> <!-- end main -->
+
+<div id="footer-sep"></div>
+
+<div id="footer"><div id="footer-content"><div>
+	<a href="https://wiki.wesnoth.org/StartingPoints">Site Map</a> • <a href="https://status.wesnoth.org/">Site Status</a><br>
+	Copyright © 2003–2021 by <a rel="author" href="https://wiki.wesnoth.org/Project">The Battle for Wesnoth Project</a>. Powered by <a href="https://www.mediawiki.org/">MediaWiki</a>.<br>
+	Site design Copyright © 2017–2021 by Iris Morelle.
+</div></div></div>
+
+<script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"limitreport":{"cputime":"0.011","walltime":"0.013","ppvisitednodes":{"value":186,"limit":1000000},"ppgeneratednodes":{"value":363,"limit":1000000},"postexpandincludesize":{"value":1529,"limit":2097152},"templateargumentsize":{"value":64,"limit":2097152},"expansiondepth":{"value":5,"limit":40},"expensivefunctioncount":{"value":18,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"timingprofile":["100.00%    7.260      1 -total","100.00%    7.260      1 Template:Translations"," 77.12%    5.599     18 Template:TranslationsHelper"]},"cachereport":{"timestamp":"20211207190834","ttl":86400,"transientcontent":false}}});});</script><script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgBackendResponseTime":23});});</script></body></html>

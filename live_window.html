@@ -1,0 +1,261 @@
+<!-- https://stackoverflow.com/questions/38667825/fastest-way-to-get-elements-in-viewport -->
+<!-- maybe the newer way https://stackoverflow.com/questions/123999/how-can-i-tell-if-a-dom-element-is-visible-in-the-current-viewport -->
+<html>
+<head>
+<title>live window</title>
+<script>
+var blocks = [] ;
+var blockHeight ;
+var blocksNumber ;
+function isVisible( element, vp )
+{
+    /* This checks if the element is in the viewport area, you could also
+     * check the display and visibility of its style.
+     */
+    var rect = element.getBoundingClientRect( ) ;
+    var x = rect.left ;
+    var x2 = x + element.offsetWidth ;
+    var y = rect.top ;
+    var y2 = y + element.offsetHeight ;
+    return !( x >= vp.w || y >= vp.h || x2 < 0 || y2 < 0 ) ;
+}
+function matches( element, vp )
+{
+    /* You can filter the elements even further */
+    return element && element.id && element.tagName === "DIV" && isVisible( element, vp ) ;
+}
+function viewport( )
+{
+    this.x = window.pageXOffset ;
+    this.w = window.innerWidth ;
+    this.x2 = this.x + this.w - 1 ;
+    this.y = window.pageYOffset ;
+    this.h = window.innerHeight ;
+    this.y2 = this.y + this.h - 1 ;
+    return this ;
+}
+function addMatch( element, array )
+{
+    /* An element may be in more than one block, so you need
+     * to check if it wasn't already added.
+     */
+    for( var i = 0 ; i < array.length ; ++i )
+    {
+        if( array[i] === element ) return ;
+    }
+    array.push( element ) ;
+}
+function onWindowScroll( )
+{
+    var msg = document.getElementById( "msg" ) ;
+    var str = "" ;
+
+    var vp = new viewport( ) ;
+    var from = Math.trunc( vp.y / blockHeight ) ;
+    var to = Math.trunc( vp.y2 / blockHeight ) ;
+    str += "Nodes: " + document.body.childNodes.length
+         + ", blocks: " + blocks.length
+         + ", searching blocks " + from + "-" + to + "<br>"
+         + "Founded: " ;
+    var array = [] ;
+    for( var b = from ; b <= to ; ++b )
+    {
+        var block = blocks[b] ;
+        for( var i = 0 ; i < block.length ; ++i )
+        {
+            if( matches( block[i], vp ) )
+            {
+                addMatch( block[i], array ) ;
+            }
+        }
+    }
+    if( array.length )
+    {
+        for( var i = 0 ; i < array.length-1 ; ++i )
+        {
+            str += array[i].id + " " ;
+        }
+        str += array[array.length-1].id ;
+    }
+    else
+    {
+        str += "none" ;
+    }
+    msg.innerHTML = str ;
+}
+function onWindowLoad( )
+{
+    setTimeout( function( )
+    {
+        var i = 0 ;
+        /* Lets populate the page */
+        while( i < 10000 )
+        {
+            var element = document.createElement( "DIV" ) ;
+            element.className = "first" ;
+            element.innerHTML = i ;
+            element.id = i++ ;
+            document.body.appendChild( element ) ;
+            element = document.createElement( "SECOND" ) ;
+            element.className = "second" ;
+            element.innerHTML = i ;
+            element.id = i++ ;
+            document.body.appendChild( element ) ;
+        }
+        /* Lets add random positioned elements */
+        var i = 0 ;
+        while( i < 500 )
+        {
+            var x = Math.floor( Math.random( ) * document.body.offsetWidth ) ;
+            var y = Math.floor( Math.random( ) * document.body.offsetHeight ) ;
+            if( Math.random( ) < 0.5 )
+            {
+                var element = document.createElement( "DIV" ) ;
+                element.className = "absolute-first" ;
+            }
+            else
+            {
+                var element = document.createElement( "SECOND" ) ;
+                element.className = "absolute-second" ;
+            }
+            element.style.left = x + "px" ;
+            element.style.top = y + "px" ;
+            element.id = "r" + i++ ;
+            element.innerHTML = element.id ;
+            document.body.appendChild( element ) ;
+        }
+        /* Now we create the blocks */
+        var nodes = document.body.childNodes ;
+        blockHeight = window.innerHeight ;
+        blocksNumber = Math.ceil( document.body.offsetHeight / blockHeight ) ;
+        for( var b = 0 ; b < blocksNumber ; ++b )
+        {
+            blocks[b] = new Array( ) ;
+        }
+        /* And we add all the nodes into they corresponding blocks */
+        for( var i = 0 ; i < nodes.length ; ++i )
+        {
+            addElement( nodes[i] ) ;
+        }
+        addEventListener( "scroll", onWindowScroll, false ) ;
+        onWindowScroll( ) ; // Initialize msg
+    }, 20 ) ;
+}
+function addElement( element )
+{
+    /* This works fine if the rest of the nodes stayed in the
+     * same position with the same size when element was added.
+     */
+    if( !element.getBoundingClientRect ) return ;
+    var rect = element.getBoundingClientRect( ) ;
+    var y = rect.top + window.pageYOffset ;
+    var y2 = y + element.offsetHeight ;
+    var from = Math.trunc( y / blockHeight ) ;
+    var to = Math.trunc( y2 / blockHeight ) ;
+    for( var b = from ; b <= to ; ++b )
+    {
+        blocks[b].push( element ) ;
+    }
+    var nodes = element.childNodes ;
+    if( nodes )
+    {
+        for( var i = 0 ; i < nodes.length ; ++i )
+        {
+            addElement( nodes[i] ) ;
+        }
+    }
+}
+function removeElement( element )
+{
+    /* This works fine if the rest of the nodes stayed in the
+     * same position with the same size when element was added.
+     */
+    if( !element.getBoundingClientRect ) return ;
+    var rect = element.getBoundingClientRect( ) ;
+    var y = rect.top + window.pageYOffset ;
+    var y2 = y + element.offsetHeight ;
+    var from = Math.trunc( y / blockHeight ) ;
+    var to = Math.trunc( y2 / blockHeight ) ;
+    for( var b = from ; b <= to ; ++b )
+    {
+        var i = blocks[b].indexOf( element ) ;
+        if( i > -1 )
+        {
+            blocks[b].splice( i, 1 ) ;
+        }
+    }
+}
+addEventListener( "load", onWindowLoad, false ) ;
+</script>
+<style>
+body
+{
+    margin: 0 auto ;
+    text-align: center ;
+    font-family: sans-serif ;
+}
+/* Filtered in elements are light green */
+.first
+{
+    height: 50px ;
+    line-height: 50px ;
+    background-color: #cfc ;
+}
+/* Filtered out elements are light red */
+.second
+{
+    display: block ;
+    height: 30px ;
+    line-height: 30px ;
+    background-color: #fcc ;
+    box-sizing: border-box ;
+}
+/* Filtered in elements are light green */
+.absolute-first
+{
+    background-color: #cfc ;
+}
+/* Filtered out elements are light red */
+.absolute-second
+{
+    background-color: #fcc ;
+}
+.absolute-first, .absolute-second
+{
+    position: absolute ;
+    padding: 1pt 5pt 1pt 5pt ;
+}
+.first, .second, .absolute-first, .absolute-second
+{
+    border: 1px solid #444 ;
+}
+#msg
+{
+    position: fixed ;
+    z-index: 1 ;
+    top: 0 ;
+    left: 0 ;
+    width: 100% ;
+    min-height: 24pt ;
+    line-height: 24pt ;
+    border: 1px solid #000 ;
+    background-color: #ffd ;
+    box-sizing: border-box ;
+    font-size: 14pt ;
+    vertical-align: middle ;
+    text-align: left ;
+    padding-left: 3pt ;
+    opacity: 0.7 ;
+}
+</style>
+<body>
+<div id="a">
+    <div id="a1">
+        <div id="a11" class="first">a11</div>
+        <div id="a12" class="first">a12</div>
+    </div>
+    <div id="a2" class="first">a2</div>
+</div>
+<msg id="msg">Loading page, please wait...</msg>
+</body>
+</html>

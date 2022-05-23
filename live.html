@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>live</title>
+<style>
+#target-container {
+	margin: 1000px auto;
+	width: 300px;
+	height: 300px;
+	background-color: #336699;
+	line-height: 300px;
+	color: white;
+	font-weight: 700;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+#message {
+	position: fixed;
+	background-color: #f1c40f;
+	padding: 10px;
+	bottom: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	box-sizing: border-box;
+	width: 100%;
+	text-align: center;
+	font-size: 14px;
+}
+</style>
+<script>
+function getSelectionText() {
+    var text = "";
+    if (window.getSelection) {
+        text = window.getSelection().toString();
+    } else if (document.selection && document.selection.type != "Control") {
+        text = document.selection.createRange().text;
+    }
+    return text;
+}
+/*function getSelectionText() {
+    var text = "";
+    var activeEl = document.activeElement;
+    var activeElTagName = activeEl ? activeEl.tagName.toLowerCase() : null;
+    if (
+      (activeElTagName == "textarea") || (activeElTagName == "input" &&
+      /^(?:text|search|password|tel|url)$/i.test(activeEl.type)) &&
+      (typeof activeEl.selectionStart == "number")
+    ) {
+        text = activeEl.value.slice(activeEl.selectionStart, activeEl.selectionEnd);
+    } else if (window.getSelection) {
+        text = window.getSelection().toString();
+    }
+    return text;
+}*/
+
+document.onmouseup = document.onkeyup = document.onselectionchange = function() {
+  document.getElementById("sel").value = getSelectionText();
+};
+/*Selection:
+<br>
+<textarea id="sel" rows="3" cols="50"></textarea>
+<p>Please select some text.</p>
+<input value="Some text in a text input">
+<br>
+<input type="search" value="Some text in a search input">
+<br>
+<input type="tel" value="4872349749823">
+<br>
+<textarea>Some text in a textarea</textarea>*/
+var observer = new IntersectionObserver(function(entries) { console.log(entries);
+	if(entries[0]['isIntersecting'] === true) {
+		if(entries[0]['intersectionRatio'] === 1)
+			document.querySelector("#message").textContent = 'Target is fully visible in screen';
+		else if(entries[0]['intersectionRatio'] > 0.5)
+			document.querySelector("#message").textContent = 'More than 50% of target is visible in screen';
+		else
+			document.querySelector("#message").textContent = 'Less than 50% of target is visible in screen';
+	}
+	else {
+		document.querySelector("#message").textContent = 'Target is not visible in screen';
+	}
+}, { threshold: [0, 0.5, 1] });
+
+observer.observe(document.querySelector("#target-container"));
+</script>
+</head>
+<body>
+<textarea id="sel" rows="3" cols="50"></textarea>
+<div id="message"></div>
+<div id="target-container">Target</div>
+<p>abc</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>def</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>ghi</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>jkl</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>mno</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>pqr</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>stu</p>
+<br /><br /><br /><br /><br /><br /><br />
+
+<p>This is some text in a longer paragraph. Therefore more content is visible or can be easily selected.</p>
+<br /><br /><br /><br /><br /><br /><br />
+
+<p>abc</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>def</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>ghi</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>Let me tell you a story about a man named George. This man was one here and once there and sometimes everywhere but never nowhere. It came to the attention of certain individuals that George could do these things and when that is how it was, then a man name Stan drove up in his van with something of a plan. Stan the man would get George to understand just what he had planned by doing thing in the way only <b>he</b> can. He'd take his van and go over to Iran and instead of bringing a fan, he'd notice some shade where he'd stand. Another part of his plan was to keep his van in the van by not having a fan and again reiterating Stan.</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>jkl</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>mno</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>pqr</p>
+<br /><br /><br /><br /><br /><br /><br />
+<p>stu</p>
+<br /><br /><br /><br /><br /><br /><br />
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+<html>
+<head>
+<title>text drop</title>
+<script src="jquery-3.5.0.js"></script>
+<script>
+$(document).ready(function(){
+
+id_counter = 0;
+document.addEventListener('keypress', function(e) {
+    //console.log('here001');
+    //intervening_key = false;
+    console.log(e);
+	//alert(e);
+	id_counter++;
+    $('#fraction').append('<u><span id="drop' + id_counter + '">' + e['key'] + '</span></u> ');
+	text_drop(id_counter);
+});
+
+/*vertical = new Array(500);
+var textPos = 0;
+for(var i = 0; i < 500; ++i) {
+    vertical[i] = textPos;
+    textPos += 50;
+}*/
+
+function poz(){
+    
+   // $(".tops").css('top','0px');
+   // $(".bottoms").css('bottom','0px');
+    //document.getElementsByClasjqsName("bottoms").style.bottom = '0px';
+    animate();
+}
+function text_drop(id){
+    
+    for(var j = 0; j < 10; ++j) {
+     //alert(vertical[j]);
+    //$(".tops").css('top',vertical[j]+'px');
+    //$(".bottoms").css('bottom',vertical[j]+'0');
+   
+       // if(vertical[j]<501){
+   $('#drop' + id).animate({'top':(50 * j) +'px'},10); // 1 is like time taken in milliseconds
+   $('#drop' + id).animate({'font-size':(520-(50 * j))+'px'},10);
+   //$(".bottoms").animate({bottom:vertical[j]+'px'},500);  
+        
+        
+        
+    //$(".tops").css('position','relative');
+    //$(".bottoms").css('position','relative');
+    //$(".tops").css('float','left');
+    //$(".bottoms").css('float','left');
+             
+       // }
+        
+ //       document.getElementsByClassName("tops").style.top = vertical[j] + "px";
+   //     document.getElementsByClassName("bottoms").style.bottom = vertical[j] + "px";
+    }
+
+}
+
+/*$('.uName').each(function(){
+    var letters = $(this).text().split('');
+    $(this).text('');
+    for(var i = 0; i < letters.length; i++){
+        if(i % 2 == 0){
+            $(this).append('<span class="tops">' + letters[i] + '</span>');
+        }
+        else{
+            $(this).append('<span class="bottoms">' + letters[i] + '</span>');
+        }
+    }
+    poz();
+});*/
+});
+</script>
+<style>
+.bottoms{
+    margin-top:200px!important;
+}
+.drop { position: relative; float: left; }
+</style>
+</head>
+<body>
+    <span class="uName">John Doe</span>
+<div id="fraction" style="border: 10px solid green;"></div>
+</body>
+</html>

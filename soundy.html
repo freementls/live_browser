@@ -1,0 +1,255 @@
+<html>
+<head>
+<title>soundy</title>
+<style>
+#thumb_buttons_column { position: absolute; top: 0; right: 0; z-index: 10; height: 99%; width: 100px; border: 1px solid red; }
+/*
+@-webkit-keyframes fadein {
+from { opacity: 0; }
+to { opacity: 1; }
+}
+
+@-webkit-keyframes fadeout {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+.in, .out {
+        -webkit-animation-timing-function: ease-in-out;
+        -webkit-animation-duration: 7005ms;
+        -moz-animation-timing-function: ease-in-out;
+        -moz-animation-duration: 7005ms;        
+}
+
+.fade.out {
+        /*z-index: 0;*/
+        -webkit-animation-name: fadeout;
+        -moz-animation-name: fadeout;
+        opacity:0;
+}
+
+.fade.in {
+        opacity: 1;
+        /*z-index: 10;*/
+        -webkit-animation-name: fadein;
+        -moz-animation-name: fadein;
+}
+.button {
+right: 0; 
+height: 100px; 
+width: 100px; 
+/*background-color: yellow; */
+position: absolute;
+opacity: 1;
+overflow: visible;
+}
+*/
+</style>
+<script src="jquery-3.5.0.js"></script>
+<!--$.playSound('http://example.org/sound.wav')
+ $.playSound('/attachments/sounds/1234.wav')
+ $.playSound('/attachments/sounds/1234.mp3')
+ 
+ //Stop Sound
+ $.stopSound();-->
+<script src="jquery.playsound.js"></script>
+<script>
+$(document).ready(function(){
+  $('#button1').click(function(){
+	//alert('button1 clicked');
+    //var box = $('<div style="color: orange; position: absolute; top: -100px; right: 100px; height: 100px; width: 100px;">1</div>');
+	$('#thumb_buttons_column').append('<div id="simple_drop" style="background-color: orange; position: absolute; bottom: 500px; right: 0; height: 100px; width: 100px; border: 1px solid black; z-index: 11; opacity: 1;">1</div>');
+	//$('#simple_drop').addClass('fade in');
+	//var div = $("div");
+    //box.animate({height: '300px', opacity: '0.4'}, 'slow');
+    //div.animate({width: '300px', opacity: '0.8'}, 'slow');
+    //div.animate({height: '100px', opacity: '0.4'}, 'slow');
+    //div.animate({width: '100px', opacity: '0.8'}, 'slow');
+	$('#simple_drop').animate({bottom: 'toggle'}, 2000).delay(800).fadeIn().fadeTo('slow', 0.33);
+    //$('#simple_drop').animate({opacity: '0'}, 2000);
+	//$('#simple_drop').fadeTo('slow', 0.33);
+	//$('#simple_drop').css('slow', 0.33);
+	//$('#simple_drop').removeClass('fade in');
+	//$('#simple_drop').addClass('fade out');
+  });
+  $('#button2').click(function(){
+	//var box1 = $('<div id="div1" style="width:90px;height:90px;display:none;background-color:black;"></div><br>');
+	//var box2 = $('<div id="div2" style="width:90px;height:90px;display:none;background-color:green;"></div><br>');
+	//var box3 = $('<div id="div3" style="width:90px;height:90px;display:none;background-color:blue;"></div><br>');
+	//var box4 = $('<div id="div4" style="width:90px;height:90px;display:none;background-color:red;"></div><br>');
+	//var box5 = $('<div id="div5" style="width:90px;height:90px;display:none;background-color:purple;"></div><br>');
+	$('#thumb_buttons_column').append('<div id="div1" style="width:90px;height:90px;display:none;background-color:black;"></div><br>');
+	$('#thumb_buttons_column').append('<div id="div2" style="width:90px;height:90px;display:none;background-color:green;"></div><br>');
+	$('#thumb_buttons_column').append('<div id="div3" style="width:90px;height:90px;display:none;background-color:blue;"></div><br>');
+	$('#thumb_buttons_column').append('<div id="div4" style="width:90px;height:90px;display:none;background-color:red;"></div><br>');
+	$('#thumb_buttons_column').append('<div id="div5" style="width:90px;height:90px;display:none;background-color:purple;"></div><br>');
+	$('#div1').delay('slow').fadeIn();
+    $('#div2').delay('fast').fadeIn();
+    $('#div3').animate({bottom: 'toggle'}, 2000).delay(800).fadeTo('slow', 0.33);
+	//$('#div3').delay(800).animate({opacity: '0'}, 2000);
+    $('#div4').delay(2000).fadeIn().delay(4000).remove();
+    $('#div5').delay(4000).fadeIn().delay(8000).remove();
+
+  });
+   
+  $counter = 0;
+  // White_square_with_question_mark.jpg
+  // accolade-logo-400x400.png
+  $('#button5').click(function(){
+  soundy('divx', 400, 'bounce contents');
+  });
+  $('#acc').click(function(){
+  soundy('acc', 400, '<img src="accolade-logo-400x400.png" width="100" height="100" />', 'text from accoladens.com title tag');
+  });
+  $('#other').click(function(){
+  soundy('other', 400, '<img src="qm.jpg" width="100" height="100" />', 'other link');
+  });
+function get_column_bottom() {
+	button = null;
+	$('.button').each(function() {
+	  //return $(this).css('bottom');
+	  button = $(this);
+	  //break;
+	});
+	if(button == null) {
+		return 0;
+	} else {
+		return button.css('bottom');
+	}
+}
+
+function soundy(id, time, contents, link, sound = false) {
+if(sound == false) {
+	sound = 'expand.wav';
+}
+id = id + $counter;
+column_bottom = get_column_bottom();
+alert('column_bottom: ' + column_bottom);
+$('#thumb_buttons_column').append('<div id="' + id + '" class="button" style="bottom: ' + (column_bottom + 900) + 'px; z-index: ' + (11 + $counter) + ';">' + contents + '<span id="' + id + 'toggle" style="display: none;">' + link + '</span></div>');
+  $('#' + id).animate({bottom: '-=900px'}, 2 * time);
+  setTimeout(function(){
+  $('<audio id="sound' + ($counter + 1) + '" class="sound-player" autoplay="autoplay" style="display:none;">'
+		 + '<source src="' + sound + '" />'
+		 + '<embed src="' + sound + '" hidden="true" autostart="true" loop="false"/>'
+	   + '</audio>'
+	 ).appendTo('body');
+  //$('audio').volume = 1/10;
+  document.getElementById('sound' + ($counter + 1)).volume = 1/2;
+  }, 2 * time);
+  $('#' + id).animate({width: '+=10px'}, 0.01 * time);
+  $('#' + id).animate({height: '-=10px'}, 0.01 * time);
+  $('#' + id).animate({width: '-=10px'}, 0.01 * time);
+  $('#' + id).animate({height: '+=10px'}, 0.01 * time);
+  $('#' + id).animate({bottom: '+=300px'}, 2 * time);
+  $('#' + id).animate({bottom: '-=300px'}, 2 * time);
+  setTimeout(function(){
+  $('<audio id="sound' + ($counter + 2) + '" class="sound-player" autoplay="autoplay" style="display:none;">'
+		 + '<source src="' + sound + '" />'
+		 + '<embed src="' + sound + '" hidden="true" autostart="true" loop="false"/>'
+	   + '</audio>'
+	 ).appendTo('body');
+  //$('audio').volume = 1/10;
+  document.getElementById('sound' + ($counter + 2)).volume = 1/6;
+  }, 6 * time);
+  $('#' + id).animate({width: '+=5px'}, 0.005 * time);
+  $('#' + id).animate({height: '-=5px'}, 0.005 * time);
+  $('#' + id).animate({width: '-=5px'}, 0.005 * time);
+  $('#' + id).animate({height: '+=5px'}, 0.005 * time);
+  $('#' + id).animate({bottom: '+=100px'}, 2 * time);
+  $('#' + id).animate({bottom: '-=100px'}, 2 * time);
+  setTimeout(function(){
+  $('<audio id="sound' + ($counter + 3) + '" class="sound-player" autoplay="autoplay" style="display:none;">'
+		 + '<source src="' + sound + '" />'
+		 + '<embed src="' + sound + '" hidden="true" autostart="true" loop="false"/>'
+	   + '</audio>'
+	 ).appendTo('body');
+  //$('audio').volume = 1/10;
+  document.getElementById('sound' + ($counter + 3)).volume = 1/18;
+  $counter++;
+  $counter++;
+  $counter++;
+  }, 10 * time);
+  $('#' + id).animate({width: '+=2px'}, 0.002 * time);
+  $('#' + id).animate({height: '-=2px'}, 0.002 * time);
+  $('#' + id).animate({width: '-=2px'}, 0.002 * time);
+  $('#' + id).animate({height: '+=2px'}, 0.002 * time);
+  $('#' + id).delay(2 * time).animate({opacity: '-=0.67'}, 'slow');
+  //$('#' + id).hover(function(){$('#' + id).css('opacity': 1)}, function(){$('#' + id).css('opacity': 0.2)});
+  $('#' + id).hover(function(){ 
+	$(this).css('opacity', 1);
+	$('#' + id + 'toggle').slideToggle();
+  }, function(){ 
+	$(this).css('opacity', 0.33);
+	$('#' + id + 'toggle').slideToggle();
+  });
+}
+  
+  $('#make').click(function(){
+	//alert('make');
+	$('#thumb_buttons_column').append('<div id="divx" style="background-color: green; position: absolute; bottom: 250px; right: 0; height: 100px; width: 100px; border: 10px solid red; z-index: 11; opacity: 1;">divx</div>');
+  });
+  $('#up').click(function(){
+	//alert('up');
+	$('#divx').animate({bottom: '+=100px'}, 'slow');
+  });
+  $('#down').click(function(){
+	//alert('down');
+	$('#divx').animate({bottom: '-=100px'}, 'slow');
+  });
+  $('#pfadeout').click(function(){
+	//alert('pfadeout');
+	$('#divx').animate({opacity: '-=0.3'}, 'slow');
+  });
+  $('#pfadein').click(function(){
+	//alert('pfadein');
+	$('#divx').animate({opacity: '+=0.3'}, 'slow');
+  });
+  $('#sound').click(function(){
+	//alert('sound');
+	$.playSound('bell.wav', 'testid');
+  });
+  $('#delete').click(function(){
+	//alert('delete');
+	$('#divx').remove();
+  });
+  $('#delete_last').click(function(){
+	$('.button').each(function() {
+	  button = $(this)
+	});
+	button.remove();
+  });
+  $('#slide_all').click(function(){
+	//alert('delete');
+	$('.button').animate({bottom: '-=100px'}, 'slow');
+  });
+  $('#audit').click(function(){
+	string = '';
+	$('.button').each(function() {
+	  string = string + 'id: ' + $(this).attr('id') + ' bottom: ' + $(this).css('bottom') + "\r\n";
+	});
+	alert(string);
+  });
+  
+});
+</script>
+</head>
+<body>
+<button id="button1">simple drop</button>
+<button id="button2">multi</button>
+<button id="button3">sequence3</button>
+<button id="button4">sequence4</button>
+<button id="button5">bounce</button><br />
+<button id="make">make divx</button>
+<button id="up">up 100px</button>
+<button id="down">down 100px</button>
+<button id="pfadeout">partial fade out</button>
+<button id="pfadein">partial fade in</button>
+<button id="sound">sound</button>
+<button id="delete">delete divx</button><br />
+<button id="acc">new accolade link</button>
+<button id="other">new other link</button>
+<button id="delete_last">delete last button</button>
+<button id="slide_all">slide all</button>
+<button id="audit">audit</button>
+<div id="thumb_buttons_column"></div>
+</body>
+</html>

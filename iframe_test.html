@@ -1,0 +1,124 @@
+<html>
+<head>
+<script>
+// attach handlers once iframe is loaded
+document.getElementById('ifrm').onload = function() {
+
+    // get reference to form to attach button onclick handlers
+    var form = document.getElementById('demoForm');
+
+    // set height of iframe and display value
+    form.elements.button1.onclick = function() {
+        var ifrm = document.getElementById('ifrm');
+        var ht = ifrm.style.height = '160px';
+        this.form.elements.display.value = 'The iframe\'s height is: ' + ht;
+    }
+
+    // increment and display counter variable contained in iframed document
+    form.elements['button2'].onclick = function() {
+        // get reference to iframe window
+        var win = document.getElementById('ifrm').contentWindow;
+        var counter = ++win.counter; //  increment
+        this.form.elements.display.value = 'counter in iframe is: ' + counter;
+    }
+
+    // reference form element in iframed document
+    form.elements.button3.onclick = function() {
+        var re = /[^-a-zA-Z!,'?\s]/g; // to filter out unwanted characters
+        var ifrm = document.getElementById('ifrm');
+        // reference to document in iframe
+        var doc = ifrm.contentDocument?
+                ifrm.contentDocument: ifrm.contentWindow.document;
+        // get reference to greeting text box in iframed document
+        var fld = doc.forms['iframeDemoForm'].elements['greeting'];
+        var val = fld.value.replace(re, '');
+        // display value in text box
+        this.form.elements.display.value = 'The greeting is: ' + val;
+    }
+
+    form.elements.button4.onclick = function() {
+        // get reference to iframe window
+        var win = document.getElementById('ifrm').contentWindow;
+        win.clearGreeting(); // call function in iframed document
+    }
+}
+</script>
+</head>
+<body>
+<form id="demoForm" action="#">
+
+    <p>
+        <input name="button1" type="button" value="Button 1" />
+        <input name="button2" type="button" value="Button 2" />
+        <input name="button3" type="button" value="Button 3" />
+        <input name="button4" type="button" value="Button 4" />
+    </p>
+
+    <p>Display: <input type="text" name="display" size="30" readonly="readonly" /></p>
+
+</form>
+
+<!--iframe name="ifrm" id="ifrm" src="/tutorials/iframes/refs/demos/iframed.html"></iframe-->
+<iframe name="ifrm" id="ifrm" src="https://www.dyn-web.com/tutorials/iframes/refs/demos/iframed.html"></iframe>
+
+<!--iframe name="ifrm" id="ifrm" srcdoc="
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>untitled</title>
+<link rel="stylesheet" href="css/demo.css" type="text/css">
+<script type="text/javascript">
+// keep this page in iframes tut
+if ( self === top ) {
+    location.replace('/tutorials/iframes/refs/iframe.php');
+}
+
+// some other domain loading my page?
+try {
+    var prop = top.location.href;
+} catch(e) {
+    //alert( e.message );
+    self.location = 'about:blank';
+}
+
+
+// example variable and function for cross-document demo
+counter = 0;
+
+function clearGreeting() {
+    document.forms['iframeDemoForm'].elements['greeting'].value = '';
+}
+</script>
+</head>
+<body>
+
+<h1>Iframe</h1>
+
+<ul>
+    <li>Button 1 sets iframe style height</li>
+    <li>Button 2 increments global variable in iframed document</li>
+    <li>Button 3 transfers Greeting below to Display text box above</li>
+    <li>Button 4 clears Greeting text box below (calls function in iframe)</li>
+</ul>
+
+<form action="#" id="iframeDemoForm">
+    <label for="greeting">Enter a Greeting: </label>
+    <input type="text" name="greeting" id="greeting" value="Hello there!">
+</form>
+
+
+<script type="text/javascript">
+(function() {
+
+    // disable submission of all forms on this page
+    for (var i=0, len=document.forms.length; i<len; i++) {
+        document.forms[i].onsubmit = function() { return false; };
+    }
+
+}());
+</script>
+
+
+</body></html>"-->
+</iframe>
+</body>
+</html>
