@@ -21,6 +21,7 @@ function __construct() {
 	life::set_user_agents();
 	$this->request_counter = 100; // initialization: over 10 is set to switch user agent by increment_user_agent();
 	life::increment_user_agent();
+	$this->scheme = life::default_scheme($_REQUEST['path']);
 //	header_remove(); // Caution This function will remove all headers set by PHP, including cookies, session and the X-Powered-By headers. https://www.php.net/manual/en/function.header-remove.php
 	//header_remove(); // doing it twice changes nothing
 	//header('Dnt: 1');
@@ -41,8 +42,10 @@ function __construct() {
 	//print('stream_context_get_default(), stream_context_get_options(), stream_context_get_params(): ');var_dump(stream_context_get_default(), stream_context_get_options(), stream_context_get_params());
 	//print('$_SERVER: ');var_dump($_SERVER);
 	
+	life::set_markup_languages();
 	life::set_server_side_languages();
-	//life::debug();
+	life::set_robot_behavior();
+	life::debug();
 	return true;
 }
 
@@ -150,7 +153,7 @@ function random_user_agent() {
 }
 
 function unparse_url($parsed_url) { // may never use, but helpful reference
-	$scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
+	$protocol   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : $this->scheme . '://';
 	$host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';
 	$port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
 	$user     = isset($parsed_url['user']) ? $parsed_url['user'] : '';
@@ -159,7 +162,7 @@ function unparse_url($parsed_url) { // may never use, but helpful reference
 	$path     = isset($parsed_url['path']) ? $parsed_url['path'] : '';
 	$query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
 	$fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
-	return "$scheme$user$pass$host$port$path$query$fragment";
+	return "$protocol$user$pass$host$port$path$query$fragment";
 }
 
 function set_server_side_languages() {
@@ -190,6 +193,27 @@ Progress WebSpeed (*.r,*.w)*/
 	return true;
 }
 
+function set_markup_languages() {
+	$this->markup_language_file_extensions = array('htm', 'html', 'shtml', 'xml');
+	return true;
+}
+
+function set_robot_behavior() {
+	// for robots.txt
+	if($this->debug) {
+		life::warning_once('hard-coded robots.txt instead of downloading robots.txt and handling it');
+	}
+	$this->paths_disallowed_to_robots = array(
+		'/nam/hopi/toth/huruing.cgi',
+		'/cdshop/cdcat.htm',
+		'/tarot/pkt/tarot0.htm',
+		'/tarot/pkt/tarot0f.htm',
+		'/tarot/pkt/tarot1.htm',
+		'/tarot/pkt/tarot1f.htm',
+	);
+	return true;
+}
+
 function file_type_from_extension($path) { // alias
 	return life::file_type_by_extension($path);
 }
@@ -198,10 +222,23 @@ function file_type_by_extension($path) {
 	//print('$path, life::file_extension($path) in file_type_by_extension: ');var_dump($path, life::file_extension($path));
 	//$file_extension_of_path = life::file_extension($path);
 	$extension_result = life::file_extension($path);
+	//print('$extension_result in file_type_by_extension(): '); var_dump($extension_result);
 	//if($file_extension_of_path == false) {
 	//	return true;
 	//}
 //	$extension_result = substr($file_extension_of_path, 1);
+	if($this->debug) {
+		life::warning_once('forcing extensions when probably shouldn\'t be');
+		print('questionable extension: ');var_dump($extension_result);
+		if(strpos($extension_result, '-') !== false) {
+			print('dash in extension' . PHP_EOL);
+			return true;
+		}
+		if(strlen($extension_result) > 10) {
+			print('extension too long' . PHP_EOL);
+			return true;
+		}
+	}
 	if($extension_result === false) {
 		return true;
 	} elseif($extension_result === 'cur') {
@@ -227,9 +264,111 @@ function file_type_by_extension($path) {
 	return $file_type;
 }
 
+function has_web_extension($path) {
+	return life::web_extension(life::extension($path));
+}
+
+function is_web_extension($extension) { // alias
+	return life::web_extension($extension);
+}
+
+function web_extension($extension) {
+	//$this->server_side_language_file_extensions
+	$web_extensions = array_merge($this->server_side_language_file_extensions, $this->markup_language_file_extensions);
+	foreach($web_extensions as $web_extension) {
+		if($web_extension === $extension) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function generate_sitemap() {
+	/*<?xml version="1.0" encoding="UTF-8"?>
+	<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+	<url>
+		<loc>http://www.example.com/foo.html</loc>
+		<lastmod>2018-06-04</lastmod>
+	</url>
+	</urlset>*/
+	//print('gs001<br />' . PHP_EOL);
+	$path = $_REQUEST['path'];
+	$site_root = $_REQUEST['site_root'];
+	//print('gs002<br />' . PHP_EOL);
+	$sitemap_contents = '<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+';
+	/*$handle = opendir($path);
+	while(($entry = readdir($handle)) !== false) {
+		if(life::has_web_extension($path . '/' . $entry)) {
+			$sitemap_contents .= '<url>
+	<loc>http://www.example.com/foo.html</loc>
+	<lastmod>' . filemtime($path . '/' . $entry) . '</lastmod>
+</url>';
+		}
+	}
+	closedir($handle);*/
+	life::recursive_file_list_to_array($path);
+	foreach($this->files as $file) {
+		if(life::has_web_extension($file)) {
+			$sitemap_contents .= '<url>
+	<loc>' . str_replace($path, $site_root, $file) . '</loc>
+	<lastmod>' . date('Y-m-d', filemtime($file)) . '</lastmod>
+</url>
+';
+		}
+	}
+	//print('gs003<br />' . PHP_EOL);
+	$sitemap_contents .= '</urlset>';
+	print('$sitemap_contents: ');var_dump($sitemap_contents);exit(0);
+	//print('gs004<br />' . PHP_EOL);
+}
+
+function recursive_file_list_to_array($directory) {
+	if(is_dir($directory)) {
+		$d = dir($directory);
+		while(FALSE !== ($entry = $d->read())) {
+			if($entry == '.' || $entry == '..') {
+				continue;
+			}
+			$Entry = $directory . DIRECTORY_SEPARATOR . $entry;
+			if(is_dir($Entry)) {
+				$this->folder_counter++;
+				life::recursive_file_list_to_array($Entry);
+				continue;
+			} else {
+				//print($Entry . "\r\n<br />");
+				$this->files[] = $Entry;
+				$this->file_counter++;
+			}
+		}
+		$d->close();
+	}
+}
+
+function scrape_file($path) {
+	$this->current_path = life::query_decode($path);
+	//print('$this->current_path, $this->last_path in scrape1: ');var_dump($this->current_path, $this->last_path);
+	//print('scrape05<br />');
+	$this->domain = life::domain($this->current_path);
+	//print('$this->domain in scrape1.5: ');var_dump($this->domain);exit(0);
+	//print('scrape06<br />');exit(0);
+	if(substr($this->current_path, 0, 2) === '//') {
+		$this->current_path = life::default_scheme($this->current_path) . $this->current_path;
+	}
+	$this->scheme = life::scheme($this->current_path, $this->contents);
+	//print('scrape07<br />');exit(0);
+	//$headers = get_headers($this->current_path);print('$headers: ');var_dump($headers); // debug
+	$this->contents = life::get_contents($this->current_path, $this->last_path);
+	//print('$this->contents in scrape1.6: ');var_dump($this->contents);
+	//print('$this->current_path, $this->last_path, $this->contents in scrape2: ');var_dump($this->current_path, $this->last_path, $this->contents);exit(0);
+	life::digest($this->contents, life::file_type_from_contents($this->contents), $this->current_path, $this->last_path, 'scrape');
+	$this->last_path = $this->current_path;
+}
+
 function scrape() {
 	if($_REQUEST['path'] == '') {
-		print('Path not properly specified in scrape.<br>');
+		print('Path not properly specified in scrape.<br />');
 	} else {
 		// https://www.scrapehero.com/how-to-prevent-getting-blacklisted-while-scraping/
 		//print('scrape01<br />');
@@ -237,19 +376,9 @@ function scrape() {
 		//print('scrape02<br />');
 		$this->files_scraped = array();
 		//print('scrape03<br />');
-		$this->browse_path = life::query_decode($_REQUEST['path']);
 		//print('scrape04<br />');
-		$this->last_browse_path = life::query_decode($_REQUEST['last_path']);
-		//print('$this->browse_path, $this->last_browse_path in scrape1: ');var_dump($this->browse_path, $this->last_browse_path);
-		//print('scrape05<br />');
-		$this->domain = life::domain($this->browse_path);
-		//print('$this->domain in scrape1.5: ');var_dump($this->domain);exit(0);
-		//print('scrape06<br />');exit(0);
-		$this->contents = life::get_contents($this->browse_path, $this->last_browse_path);
-		//print('$this->contents in scrape1.6: ');var_dump($this->contents);
-		$this->protocol = life::protocol($this->browse_path, $this->contents);
-		//print('$this->browse_path, $this->last_browse_path, $this->contents in scrape2: ');var_dump($this->browse_path, $this->last_browse_path, $this->contents);exit(0);
-		life::digest($this->contents, life::file_type_from_extension($this->browse_path), $this->browse_path, $this->last_browse_path, 'scrape');
+		$this->last_path = life::query_decode($_REQUEST['last_path']);
+		life::scrape_file($_REQUEST['path']);
 		// clean up the files array
 		/*foreach($this->files_to_scrape as $file_to_scrape => $scrape) {
 			if($scrape || $this->domain === life::domain($file_to_parse)) { // only download from the same domain otherwise it could download the internet ...although... it should be noted that having centralized domains is what we're eschewing
@@ -261,19 +390,17 @@ function scrape() {
 		//$this->files_to_scrape = array(life::absolutize_path('totosms.gif') => true); // debug
 		//$this->files_to_scrape = array('http://www.pocketgamer.info/images/get_stone.gif' => true); // debug
 		//$this->files_to_scrape = array('http://www.pocketgamer.info/manifest.json' => true); // debug
-		//print('$this->action, $this->files_to_scrape before while loop: ');var_dump($this->action, $this->files_to_scrape);
+		//print('$this->action, $this->files_to_scrape before while loop: ');var_dump($this->action, $this->files_to_scrape);//exit(0);
 		while(sizeof($this->files_to_scrape) > 0) {
 			$random_key = array_rand($this->files_to_scrape);
-			$contents = life::get_contents($random_key);
-			//print('$contents in scraping while loop: ');var_dump($contents);exit(0);
-			life::digest($contents, life::file_type_by_extension($random_key), $random_key, false, 'scrape');
-			print('scraped ' . $random_key . '<br />
-');
+			life::scrape_file($random_key);
+			//print('scraped ' . $random_key . '<br />' . PHP_EOL);
 			unset($this->files_to_scrape[$random_key]);
 			$this->files_scraped[$random_key] = true;
 			//$this->files_to_scrape = life::reindex($this->files_to_scrape); // would maybe like to sleep while reindexing since it could take significant time
 			//sleep(rand(250, 1250) / 1000);
-			usleep(rand(250000, 1250000));
+		//	usleep(rand(250000, 1250000));
+		//	usleep(rand(250000, 12500000)); // longer for picky sites?
 			//print('$this->files_to_scrape at end of while loop: ');var_dump($this->files_to_scrape);
 			//if($this->debug && $this->debug_counter > 100) {
 			//	life::fatal_error('$this->debug_counter > 100');
@@ -303,8 +430,8 @@ function normalize_URL($URL) {
 	return $URL;
 }
 
-function get_by_request($variable) {
-	return $_REQUEST[$variable];
+function parsed_url($path) { // alias
+	return parse_url($path);
 }
 
 function normalize($path) { // alias
@@ -325,31 +452,67 @@ function absolutize($path) { // alias
 	return life::absolutize_path($path);
 }
 
-function absolutize_path($path, $last_path = false) {
+function absolutize_path($path, $last_path = false, $do_not_add_default_page = false) {
 	//life::warning_once('should use realpath or parse_url');
+	//print('ap000<br />' . PHP_EOL);
+	//$debug_break_at_end_of_function = false;
+	//if(strpos($path, 'fire/index') !== false/* || strpos($path, 'circularDNA') !== false*/) {
+	//	$initial_path = $path;
+	//	$debug_break_at_end_of_function = true;
+	//}
 	if($last_path === false) {
-		$last_path = $this->last_browse_path;
+		$last_path = $this->last_path;
 	}
-	//print('$path at start of absolutize_path: ');var_dump($path);
+	//print('$path, $this->current_path, $last_path at start of absolutize_path: ');var_dump($path, $this->current_path, $last_path);
 	//if(strpos($path, 'cache/') !== false) {
 	//	print('$path, $last_path, $download_time in absolutize_path(): ');var_dump($path, $last_path, $download_time);
 	//	life::fatal_error('should never be passed a download path with cache; fix where it is coming from');
 	//}
 	//print('$path, substr($path, 0, 2) in absolutize_path() 01: ');var_dump($path, substr($path, 0, 2));
+	//print('ap001<br />' . PHP_EOL);
+	if(strpos($path, '/') === false && strpos($path, '.') === false) {
+		$path = $path . '/';
+	}
+	//print('ap002<br />' . PHP_EOL);
+	if(strpos($path, '://') === false && strpos($last_path, '://') === false) {
+		$best_path = $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
+	} else {
+		$best_path = $path;
+	}
+	if(strlen($this->current_path) > 0) {
+		$best_path = $this->current_path;
+	}
+	if(strlen($this->last_path) > 0) {
+		if(strpos($this->current_path, '://') === false && strpos($last_path, '://') !== false) {
+		//if(strpos($last_path, '://') !== false) {
+			$best_path = $last_path;
+		}
+	}
+	if(strpos($best_path, '://') === false) {
+		$best_path = $this->scheme . '://' . $best_path;
+	}
+	//print('$best_path: ' . $best_path . '<br />' . PHP_EOL);
+	//print('ap003<br />' . PHP_EOL);
 	if(substr($path, 0, 2) === './') {
-		$path = life::fileless($last_path) . substr($path, 2);
+		//print('ap004<br />' . PHP_EOL);
+		$path = life::site_root_from_path($best_path) . substr($path, 1);
 		//print('$path in absolutize_path() 01.1: ');var_dump($path);
 	} elseif(substr($path, 0, 2) === '//') {
-		$path = $this->protocol . $path;
+		//print('ap005<br />' . PHP_EOL);
+		$path = $this->scheme . ':' . $path;
 		//print('$path in absolutize_path() 01.2: ');var_dump($path);
 	} elseif(substr($path, 0, 6) === 'cache/') {
-		$path = $this->protocol . '//' . substr($path, 6);
+		//print('ap006<br />' . PHP_EOL);
+		$path = $this->scheme . '://' . substr($path, 6);
 		//print('$path in absolutize_path() 01.3: ');var_dump($path);
 	} elseif(strpos($path, '://') === false) {
-		$path = str_replace('//', '/', $path);
+		//print('ap007<br />' . PHP_EOL);
+		//$path = str_replace('//', '/', $path);
 		//print('$path, $last_path in absolutize_path() 01.4: ');var_dump($path, $last_path);
-		if(strpos($this->browse_path, '://') === false) {
-			if($path[0] === '/') {
+		/*if(strpos($this->current_path, '://') === false) {
+			if(strpos($path, '/') === false && strpos($path, '.') === false) {
+				$path = life::site_root_from_path($last_path) . $path . '/';
+			} elseif($path[0] === '/') {
 				$path = life::site_root_from_path($last_path) . substr($path, 1);
 				//$path = life::site_root_from_path($last_path) . $path;
 				//print('$path in absolutize_path() 01.4.1: ');var_dump($path);
@@ -357,18 +520,71 @@ function absolutize_path($path, $last_path = false) {
 				$path = life::fileless_path($last_path) . $path;
 				//print('$path in absolutize_path() 01.4.2: ');var_dump($path);
 			}
-		} else {
-			if($path[0] === '/') {
-				$path = life::site_root_from_path($this->browse_path) . substr($path, 1);
+		} else {*/
+			/*if(strpos($path, '/') === false && strpos($path, '.') === false) {
+				$path = life::site_root_from_path($this->current_path) . $path . '/';
+			} else*/if($path[0] === '/') {
+				//print('ap008<br />' . PHP_EOL);
+				$path = life::site_root_from_path($best_path) . substr($path, 1);
 				//$path = life::site_root_from_path($last_path) . $path;
 				//print('$path in absolutize_path() 01.4.1: ');var_dump($path);
+			} elseif(strpos($path, '.') !== false) {
+				//print('ap008.5<br />' . PHP_EOL);
+				//print('$this->current_path, $path before root and rootless processing in absolutize_path: ');var_dump($this->current_path, $path);
+				//$path = life::fileless($best_path) . '/' . $path;
+				if(strpos($path, '../') === 0) { // leave it to have its commands processed?
+					//print('ap008.6<br />' . PHP_EOL);
+					$path = life::fileless($best_path) . '/' . $path;
+				} else {
+					//print('ap008.7<br />' . PHP_EOL);
+					$path = life::site_root_from_path($best_path) . '/' . life::rootless($path);
+				}
+				//print('$path after root and rootless processing in absolutize_path: ');var_dump($path);
 			} else {
-				$path = life::fileless_path($this->browse_path) . $path;
+				//print('ap009<br />' . PHP_EOL);
+				$path = life::site_root_from_path($best_path) . life::path_by_parsing($path);
 				//print('$path in absolutize_path() 01.4.2: ');var_dump($path);
 			}
+		//}
+	}
+	//print('ap010<br />' . PHP_EOL);
+	if(!$do_not_add_default_page) {
+		if($path[strlen($path) - 1] === '/') {
+			//print('ap011<br />' . PHP_EOL);
+			$path .= life::default_page($path, $this->contents);
+			//print('$path in absolutize_path() 04.3: ');var_dump($path);
+		}
+		//print('ap011.5 parse_url($path): ');var_dump(parse_url($path));//exit(0);
+		$parsed_url = parse_url($path);
+		//print('absolutize_path $path, $parsed_url: ');var_dump($path, $parsed_url);
+		if(!isset($parsed_url['path'])) {
+			//print('ap011.7<br />' . PHP_EOL);
+			$path .= '/' . life::default_page($path, $this->contents);
+			//print('$path in absolutize_path() 04.4: ');var_dump($path);
 		}
 	}
-	$path = realpath($path);
+	//print('ap012<br />' . PHP_EOL);
+	//print('$path before processing commands: ');var_dump($path);
+	//$path = realpath($path);
+	$protocol_position = strpos($path, '://');
+	$protocol = substr($path, 0, $protocol_position + 3);
+	$protocolless_path = substr($path, $protocol_position + 3);
+	$protocolless_path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $protocolless_path);
+	$parts = array_filter(explode(DIRECTORY_SEPARATOR, $protocolless_path), 'strlen');
+	$absolutes = array();
+	foreach ($parts as $part) {
+		if ('.' == $part) continue;
+		if ('..' == $part) {
+			array_pop($absolutes);
+		} else {
+			$absolutes[] = $part;
+		}
+	}
+	$protocolless_path = implode(DIRECTORY_SEPARATOR, $absolutes);
+	$path = $protocol . $protocolless_path;
+	//print('ap013<br />' . PHP_EOL);
+	//print('$path after processing commands: ');var_dump($path);
+
 	// would probably also like to resolve the up one level '..' commands otherwise they'll accumulate!
 	// too crude? probably not.
 	/****$path = str_replace('/./', '/', $path);
@@ -395,26 +611,40 @@ function absolutize_path($path, $last_path = false) {
 	//	$path .= life::default_page($path, $this->contents);
 	//	//print('$path in absolutize_path() 04.3: ');var_dump($path);
 	//}
-	if($this->debug) {
+	//if($this->debug) {
 		if($path[0] === '/') {
 			print('$path, $last_path: ');var_dump($path, $last_path);
 			life::fatal_error('should never be getting a relative path out of absolutize_path');
 		}
-		if(strpos($path, 'cache/') !== false) {
+		if(strpos($path, 'cache/') === 0) {
 			print('$path, $last_path: ');var_dump($path, $last_path);
-			life::fatal_error('should consider a cached path to be an absolute path');
+			life::fatal_error('should never be getting a local cache path out of absolutize_path');
 		}
-	}
+		if(strpos($path, 'scrape/') === 0) {
+			print('$path, $last_path: ');var_dump($path, $last_path);
+			life::fatal_error('should never be getting a local scrape path out of absolutize_path');
+		}
+	//}
 	//print('$path at end of absolutize_path: ');var_dump($path);
+	//if($debug_break_at_end_of_function) {
+	//	print('$debug_break_at_end_of_function (absolutize_path) $initial_path, $path: ');var_dump($initial_path, $path);exit(0);
+	//}
+	return $path;
+}
+
+function ensure_scheme($path) {
+	if(strpos($path, '://') === false) {
+		$path = $this->scheme . '://' . $path;
+	}
 	return $path;
 }
 
 function get_contents($path, $last_path = false, $download_time = false) {
 	if(substr($path, 0, 2) === '//') {
-		$path = life::default_protocol(false, $path) . $path;
+		$path = life::default_scheme($path) . ':' . $path;
 	}
 	$contents = life::download_if($path, $last_path, $download_time);
-	//print('$path, $contents in get_contents(): ');var_dump($path, $contents);
+	//print('$path, $contents in get_contents(): ');var_dump($path, $contents);exit(0);
 	return $contents;
 }
 
@@ -435,10 +665,10 @@ function download_if($download_path = false, $last_path = false, $download_time 
 	// unnecessary or missing an updated file due to caching. the internet is not structured this way... YET! IPFS
 	//print('$download_path, $last_path, $download_time at start of download_if(): ');var_dump($download_path, $last_path, $download_time);
 	if($download_path === false) {
-		$download_path = $this->browse_path;
+		$download_path = $this->current_path;
 	}
 	if($last_path === false) {
-		$last_path = $this->last_browse_path;
+		$last_path = $this->last_path;
 	}
 	//if($mode === false) {
 	//	$mode = 'browse';
@@ -454,20 +684,22 @@ function download_if($download_path = false, $last_path = false, $download_time 
 	//$local_path = life::filename_encode(life::local_path($download_path, $absolute_path)); // hilarious
 	$download_path = life::absolutize_path($download_path);
 	$local_scrape_path = life::local_path($download_path, 'scrape');
-	//print('$local_scrape_path: ');var_dump($local_scrape_path);
+	print('$download_path, $local_scrape_path in download_if(): ');var_dump($download_path, $local_scrape_path);
 	$got_contents_from_scrape = false;
 	if(file_exists($local_scrape_path)) {
 		if($download_time === false) {
 			$download_time = filemtime($local_scrape_path);
 		}
+		//print('$download_time: ');var_dump($download_time);
 		if(time() - $download_time > 60 * 60 * 24 * 365) { // one year
-			
+			print('file was not recently scraped<br />' . PHP_EOL);
 		} else {
+			print('file was recently scraped<br />' . PHP_EOL);
 			$contents = file_get_contents($local_scrape_path); // local
 			$got_contents_from_scrape = true;
 		}
 	}
-	//print('$got_contents_from_scrape: ');var_dump($got_contents_from_scrape);
+	//print('$this->current_path, $this->last_path, $download_path, $local_scrape_path, $got_contents_from_scrape: ');var_dump($this->current_path, $this->last_path, $download_path, $local_scrape_path, $got_contents_from_scrape);
 	if(!$got_contents_from_scrape) {
 		$local_path = life::local_path($download_path, 'browse');
 		//print('$download_path, $local_path mid download_if(): ');var_dump($download_path, $local_path);
@@ -484,9 +716,11 @@ function download_if($download_path = false, $last_path = false, $download_time 
 			if(time() - $download_time > 60 * 60 * 24 * 365) { // one year
 				//print('update file<br />');
 				$download_file = true;
+				print('file was not recently browsed<br />' . PHP_EOL);
 			} else {
 				//print('do not update file<br />');
 				$contents = file_get_contents($local_path); // local
+				print('file was not recently browsed<br />' . PHP_EOL);
 			}
 		} else {
 			//print('file does not exist<br />');
@@ -496,7 +730,16 @@ function download_if($download_path = false, $last_path = false, $download_time 
 	if($download_file) {
 		//print('download file<br />');
 		//print('$download_path before downloading: ');var_dump($download_path);
+		//life::fatal_error('stopping before downloading remote');
 		$contents = file_get_contents($download_path, false, life::get_stream_context()); // remote
+		if($this->debug) {
+			if($contents == false) {
+				life::fatal_error('problem downloading contents in download_if(). possibly not connected to the internet. possibly server forbade download.');
+			}
+		}
+		//usleep(rand(250000, 1250000));
+		//usleep(rand(250000, 3250000));
+		usleep(rand(250000, 12500000));
 		if(strlen($contents) == 0) {
 			//print('did not download file<br />');
 			//$download_path = $download_path . $last_path;
@@ -512,7 +755,9 @@ function download_if($download_path = false, $last_path = false, $download_time 
 			$file_type = life::file_extension($local_path);
 			$contents = life::digest($contents, $file_type, $download_path);
 		}
-		//print('downloaded file<br />');
+		if($this->downloaded_file) {
+			print('downloaded file:' . $download_path . '<br />' . PHP_EOL);
+		}
 	}
 	
 	//if(strpos($local_path, 'light') !== false) { // debug
@@ -532,13 +777,19 @@ function download_if($download_path = false, $last_path = false, $download_time 
 }
 
 function default_page($path, $contents = false) {
+	//print('$path in default_page: ');var_dump($path);
+	//print('dp001<br />' . PHP_EOL);
 	if(strpos($path, 'php') !== false) {
+		//print('dp002<br />' . PHP_EOL);
 		return 'index.php';
 	} elseif(strpos($path, 'cfm') !== false) {
+		//print('dp003<br />' . PHP_EOL);
 		return 'index.cfm';
 	} elseif(strpos($path, 'aspx') !== false) {
+		//print('dp004<br />' . PHP_EOL);
 		return 'index.aspx';
 	} elseif(strpos($path, 'asp') !== false) {
+		//print('dp005<br />' . PHP_EOL);
 		return 'index.asp';
 	} /*elseif(strpos($last_path, 'php') !== false) {
 		return 'index.php';
@@ -548,14 +799,40 @@ function default_page($path, $contents = false) {
 		return 'index.aspx';
 	} elseif(strpos($last_path, 'asp') !== false) {
 		return 'index.asp';
-	} */ else {
+	} */ elseif(strlen($contents) > 0) {
+		//print('dp006<br />' . PHP_EOL);
 		$default_extension = life::default_extension($contents);
 		if($default_extension !== false) {
 			return 'index.' . $default_extension;
 		}
-		// just default to index.html (since it's a webserver) although variations like index.php or index.asp or home.htm or default.html will have to eventually be handled.
-		return 'index.html';
+	} else {
+		//print('dp007<br />' . PHP_EOL);
+		// mini version of local_path (that doesn't use default_page, to avoid recursion)
+		$absolute_path = life::filename_encode(life::absolutize_path($path, false, true));
+		$local_path = 'scrape' . DS . substr($absolute_path, strpos($absolute_path, '://') + 3);
+		if(file_exists($local_path . '/index.html')) {
+			//print('dp008<br />' . PHP_EOL);
+			return 'index.html';
+		} elseif(file_exists($local_path . '/index.htm')) {
+			//print('dp009<br />' . PHP_EOL);
+			return 'index.htm';
+		} elseif(file_exists($local_path . '/index.php')) {
+			//print('dp010<br />' . PHP_EOL);
+			return 'index.php';
+		} elseif(file_exists($local_path . '/index.cfm')) {
+			//print('dp011<br />' . PHP_EOL);
+			return 'index.cfm';
+		} elseif(file_exists($local_path . '/index.aspx')) {
+			//print('dp012<br />' . PHP_EOL);
+			return 'index.aspx';
+		} elseif(file_exists($local_path . '/index.asp')) {
+			//print('dp013<br />' . PHP_EOL);
+			return 'index.asp';
+		}
 	}
+	// just default to index.html (since it's a webserver) although variations like index.php or index.asp or home.htm or default.html will have to eventually be handled.
+	//print('dp014<br />' . PHP_EOL);
+	return 'index.html';
 }
 
 function local_path($path, $mode = false) {
@@ -617,13 +894,18 @@ function fileless($path) { // alias
 }
 
 function fileless_path($path) {
-	return substr($path, 0, life::strpos_last($path, basename($path))); // works with query and fragment??
-	$last_slash_position = life::strpos_last($path, '/');
-	if($last_slash_position === false) {
-		return $path;
-	} else {
-		return substr($path, 0, $last_slash_position + 1);
+	//print('$path at start of fileless_path: ');var_dump($path);
+	//return substr($path, 0, life::strpos_last($path, basename($path))); // works with query and fragment??
+	// doesn't work at last with http://www.goldenmean.info/ basename seems to fail
+	if(strpos($path, '://') !== false && substr_count($path, '/') >= 3) {
+		$last_slash_position = life::strpos_last($path, '/');
+		if($last_slash_position === false) {
+			return $path;
+		} else {
+			return substr($path, 0, $last_slash_position + 1);
+		}
 	}
+	return $path;
 }
 
 function lifeless_path($path) { // inside joke/palindrome/anagram
@@ -632,18 +914,18 @@ function lifeless_path($path) { // inside joke/palindrome/anagram
 
 function browse() {
 	if($_REQUEST['path'] == '') {
-		print('Path not properly specified in browse.<br>');
+		print('Path not properly specified in browse.<br />');
 	} else {
-		$this->browse_path = life::query_decode($_REQUEST['path']);
-		$this->last_browse_path = life::query_decode($_REQUEST['last_path']);
-		$this->domain = life::domain($this->browse_path);
-		$this->contents = life::get_contents($this->browse_path, $this->last_browse_path);
-		$this->protocol = life::protocol($this->browse_path, $this->contents);
-		//print('$this->browse_path, $this->last_browse_path, $this->contents in browse: ');var_dump($this->browse_path, $this->last_browse_path, $this->contents);exit(0);
+		$this->current_path = life::query_decode($_REQUEST['path']);
+		$this->last_path = life::query_decode($_REQUEST['last_path']);
+		$this->domain = life::domain($this->current_path);
+		$this->contents = life::get_contents($this->current_path, $this->last_path);
+		$this->scheme = life::scheme($this->current_path, $this->contents);
+		//print('$this->current_path, $this->last_path, $this->contents in browse: ');var_dump($this->current_path, $this->last_path, $this->contents);exit(0);
 		$this->contents = life::digest($this->contents);
-		$up_one_level_path = life::up_one_level_path($this->browse_path);
+		$up_one_level_path = life::up_one_level_path($this->current_path);
 		if($up_one_level_path !== false) {
-			$this->contents = life::append($this->contents, '<a href="do.php?action=browse&path=' . life::query_encode($up_one_level_path) . '&last_path=' . life::query_encode($this->browse_path) . '">Up one level</a>');
+			$this->contents = life::append($this->contents, '<a href="do.php?action=browse&path=' . life::query_encode($up_one_level_path) . '&last_path=' . life::query_encode($this->current_path) . '">Up one level</a>');
 		}
 		print($this->contents);
 	}
@@ -676,12 +958,13 @@ function up_one_level_path($path) {
 function default_extension($contents) {
 	// for now nothing specific like looking for internal references to the filename in the contents of the file
 	// could use basename and parse_url to ensure we are getting references to real files from the contents
-	preg_match_all('/(\'")([^\'"]+)(\.\w+)\1/is', $contents, $extension_matches);
+	preg_match_all('/([\'"])([^\'"]+)(\.\w+)\1/is', $contents, $extension_matches);
 	$extension_counts = array();
 	foreach($extension_matches[3] as $extension) {
 		$extension_counts[$extension]++; 
 	}
 	ksort($extension_counts);
+	//print('$contents, $extension_matches, $extension_counts in default_extension: ');var_dump($contents, $extension_matches, $extension_counts);
 	// just pick the most prevalent
 	foreach($extension_counts as $extension => $count) {
 		if(strpos($extension, '.htm') === 0) {
@@ -703,20 +986,15 @@ function uniform_resource_exists($url) {
    return stripos($headers[0], '200 OK')?true:false;
 }
 
-function default_protocol($contents = false, $path = false) {
+function default_protocol_old($contents = false, $path = false) {
 	// could use parse_url to ensure we are getting references to real files from the contents
-	$protocol_limiter_position = strpos($path, '://');
-	print('$path, $protocol_limiter_position: ');var_dump($path, $protocol_limiter_position);
-	if($protocol_limiter_position !== false) {
-		return substr($path, 0, $protocol_limiter_position);
-	}
 	// for now nothing specific like looking for internal references to the filename in the contents of the file
 	if(strlen($contents) > 0) {
 		preg_match_all('/(\w+):\/\//is', $contents, $protocol_matches);
 		//print('$contents, $protocol_matches: ');var_dump($contents, $protocol_matches);exit(0);
 		$protocol_counts = array();
 		foreach($protocol_matches[1] as $protocol) {
-			$protocol_counts[$protocol]++; 
+			$protocol_counts[$protocol]++;
 		}
 		ksort($protocol_counts);
 		// just pick the most prevalent
@@ -730,6 +1008,11 @@ function default_protocol($contents = false, $path = false) {
 			return $protocol . ':';
 		}
 	}
+	$protocol_limiter_position = strpos($path, '://');
+	print('$path, $protocol_limiter_position: ');var_dump($path, $protocol_limiter_position);
+	if($protocol_limiter_position !== false) {
+		return substr($path, 0, $protocol_limiter_position) . ':';
+	}
 	if($path !== false && life::uniform_resource_exists('https:') . $path) { // path starting with two forward slashes //
 		return 'https:';
 	} else {
@@ -737,11 +1020,11 @@ function default_protocol($contents = false, $path = false) {
 	}
 }
 
-function protocol($path, $contents = false) {
+function protocol_old($path, $contents = false) {
 	return life::protocol_from_path($path, $contents);
 }
 
-function protocol_from_path($path, $contents = false) {
+function protocol_from_path_old($path, $contents = false) {
 	// protocol is at the start of the path and ends with a colon e.g. http:// ftp:// magnet: mailto:
 	// could use parse_url to ensure we are getting references to real files from the contents
 	$protocol_end_limiter_position = strpos($path, '://');
@@ -752,6 +1035,58 @@ function protocol_from_path($path, $contents = false) {
 	}
 	//print('$path, $protocol in protocol_from_path: ');var_dump($path, $protocol);
 	return $protocol;
+}
+
+function default_scheme($path = false, $contents = false) {
+	// could use parse_url to ensure we are getting references to real files from the contents
+	// for now nothing specific like looking for internal references to the filename in the contents of the file
+	if(strlen($contents) > 0) {
+		preg_match_all('/(\w+):\/\//is', $contents, $scheme_matches);
+		//print('$contents, $scheme_matches: ');var_dump($contents, $scheme_matches);exit(0);
+		$scheme_counts = array();
+		foreach($scheme_matches[1] as $scheme) {
+			$scheme_counts[$scheme]++;
+		}
+		ksort($scheme_counts);
+		// just pick the most prevalent
+		foreach($scheme_counts as $scheme => $count) {
+			if(strpos($scheme, 'http') === 0) {
+				return $scheme;
+			}
+		}
+		// otherwise just take the most prevalent one
+		foreach($scheme_counts as $scheme => $count) {
+			return $scheme;
+		}
+	}
+	$scheme_limiter_position = strpos($path, '://');
+	//print('$path, $scheme_limiter_position: ');var_dump($path, $scheme_limiter_position);
+	//if($scheme_limiter_position !== false) {
+	if($scheme_limiter_position > 0) {
+		return substr($path, 0, $scheme_limiter_position);
+	}
+	if($path !== false && life::uniform_resource_exists('https:') . $path) { // path starting with two forward slashes //
+		return 'https';
+	} else {
+		return 'http';
+	}
+}
+
+function scheme($path, $contents = false) {
+	return life::scheme_from_path($path, $contents);
+}
+
+function scheme_from_path($path, $contents = false) {
+	// scheme is at the start of the path and ends before the colon e.g. http:// ftp:// magnet: mailto:
+	// could use parse_url to ensure we are getting references to real files from the contents
+	$scheme_end_limiter_position = strpos($path, '://');
+	if($scheme_end_limiter_position !== false) {
+		$scheme = substr($path, 0, $scheme_end_limiter_position) . ':';
+	} else { // try to grab it from the contents
+		return life::default_scheme($path, $contents);
+	}
+	//print('$path, $scheme in scheme_from_path: ');var_dump($path, $scheme);
+	return $scheme;
 }
 
 function domain($path, $last_path = false) {
@@ -769,16 +1104,24 @@ function domain_from_path($path, $last_path = false) {
 		$path = substr($path, 6);
 	}
 	$parsed_path_url = parse_url($path);
+	if(!isset($parsed_path_url['host']) && isset($parsed_path_url['path'])) {
+		$parsed_path_url['host'] = $parsed_path_url['path'];
+	}
 	if($parsed_path_url['host'] == '') {
 		if(substr($last_path, 0, 6) === 'cache/') {
 			$last_path = substr($last_path, 6);
 		}
 		$parsed_last_path_url = parse_url($last_path);
-		if($parsed_path_url['host'] == '') {
-			print('$parsed_path_url, $parsed_last_path_url: ');var_dump($parsed_path_url, $parsed_last_path_url);
-			life::fatal_error('should never not find a host using site_root_from_path() from $path and $last_path.');
+		if(!isset($parsed_last_path_url['host']) && isset($parsed_last_path_url['path'])) {
+			$parsed_last_path_url['host'] = $parsed_last_path_url['path'];
+			if($parsed_path_url['host'] == '') {
+				$parsed_path_url = $parsed_last_path_url;
+			}
 		}
-		$parsed_path_url = $parsed_last_path_url;
+		if($parsed_path_url['host'] == '') {
+			print('$path, $last_path, $parsed_path_url, $parsed_last_path_url: ');var_dump($path, $last_path, $parsed_path_url, $parsed_last_path_url);
+			life::fatal_error('should never not find a host using domain_from_path() from $path and $last_path.');
+		}
 	}
 	life::warning_once('will have to think about how to store websites that use different ports... theoretically there could be fully different websites simply by different use of ports');
 	$host     = isset($parsed_path_url['host']) ? $parsed_path_url['host'] : '';
@@ -829,27 +1172,68 @@ function domain_from_path($path, $last_path = false) {
 	return $domain;****/
 }
 
+function rootless($path) {
+	//print('$path at the start of rootless: ' . $path . '<br />' . PHP_EOL);
+	if(substr_count($path, '/') > 2) {
+		$end_of_root_slash_position = life::strpos_nth($path, '/', 3);
+	} elseif(substr_count($path, '/') > 0) {
+		$end_of_root_slash_position = strpos($path, '/');
+	} else {
+		$end_of_root_slash_position = strlen($path);
+	}
+	//print('$path at the end of rootless: ' . substr($path, $end_of_root_slash_position + 1) . '<br />' . PHP_EOL);
+	return substr($path, $end_of_root_slash_position + 1);
+}
+
 function site_root_from_path($path, $last_path = false) {
 	if($last_path === false) {
-		$last_path = $this->last_browse_path;
+		$last_path = $this->last_path;
 	}
 	//print('$path in site_root_from_path: ');var_dump($path);
+ 	//$parsed_path_url = parse_url($path);
+ 	//if($parsed_path_url['host'] == '') {
+ 	//	$parsed_last_path_url = parse_url($last_path);
+ 	//	if($parsed_path_url['host'] == '') {
+ 	//		print('$parsed_path_url, $parsed_last_path_url: ');var_dump($parsed_path_url, $parsed_last_path_url);
+ 	//		life::fatal_error('should never not find a host using site_root_from_path() from $path and $last_path.');
+ 	//	}
+ 	//	$parsed_path_url = $parsed_last_path_url;
+ 	//}
+	if(substr($path, 0, 6) === 'cache/') {
+		$path = substr($path, 6);
+	}
+	if(strpos($path, '://') === false) {
+		$path = $this->scheme . '://' . $path;
+	}
 	$parsed_path_url = parse_url($path);
+	//print('$parsed_path_url in site_root_from_path: ');var_dump($parsed_path_url);
+	if(!isset($parsed_path_url['host']) && isset($parsed_path_url['path'])) { // mini version of absolutize path... instead or recursion!
+		$parsed_path_url['host'] = $parsed_path_url['path'];
+	}
 	if($parsed_path_url['host'] == '') {
+		if(substr($last_path, 0, 6) === 'cache/') {
+			$last_path = substr($last_path, 6);
+		}
 		$parsed_last_path_url = parse_url($last_path);
+		if(!isset($parsed_last_path_url['host']) && isset($parsed_last_path_url['path'])) {
+			$parsed_last_path_url['host'] = $parsed_last_path_url['path'];
+			if($parsed_path_url['host'] == '') {
+				$parsed_path_url = $parsed_last_path_url;
+			}
+		}
 		if($parsed_path_url['host'] == '') {
-			print('$parsed_path_url, $parsed_last_path_url: ');var_dump($parsed_path_url, $parsed_last_path_url);
+			print('$path, $last_path, $parsed_path_url, $parsed_last_path_url: ');var_dump($path, $last_path, $parsed_path_url, $parsed_last_path_url);
 			life::fatal_error('should never not find a host using site_root_from_path() from $path and $last_path.');
 		}
-		$parsed_path_url = $parsed_last_path_url;
 	}
-	$scheme   = isset($parsed_path_url['scheme']) ? $parsed_path_url['scheme'] . '://' : '';
+	//print('$path, $last_path, $parsed_path_url, $parsed_last_path_url in site_root_from_path: ');var_dump($path, $last_path, $parsed_path_url, $parsed_last_path_url);
+	$protocol   = isset($parsed_path_url['scheme']) ? $parsed_path_url['scheme'] . '://' : $this->scheme . '://';
 	$host     = isset($parsed_path_url['host']) ? $parsed_path_url['host'] : '';
 	$port     = isset($parsed_path_url['port']) ? ':' . $parsed_path_url['port'] : '';
 	$user     = isset($parsed_path_url['user']) ? $parsed_path_url['user'] : '';
 	$pass     = isset($parsed_path_url['pass']) ? ':' . $parsed_path_url['pass']  : '';
 	$pass     = ($user || $pass) ? "$pass@" : '';
-	return "$scheme$user$pass$host$port";
+	return "$protocol$user$pass$host$port";
 
 	// need the protocol
 	if(strpos($path, '://') === false) {
@@ -894,6 +1278,19 @@ function site_root_from_path($path, $last_path = false) {
 	return $site_root;
 }
 
+function path_by_parsing($path) {
+	// really funky function that doesn't currently (2022-07-14) have general usage
+	//print('$path in path_by_parsing: ');var_dump($path);
+	if(substr($path, 0, 6) === 'cache/') {
+		$path = substr($path, 6);
+	}
+	$parsed_path_url = parse_url($path);
+	if(!isset($parsed_path_url['host']) && isset($parsed_path_url['path'])) {
+		return '';
+	}
+	return $parsed_path_url['path'];
+}
+
 function sweep($contents) {
 	// placeholder function for now
 	return $contents;
@@ -935,17 +1332,17 @@ function digest($contents, $file_type = false, $path = false, $last_path = false
 		$file_type = life::file_type_from_contents($contents);
 	}
 	if($path === false) {
-		$path = $this->browse_path;
+		$path = $this->current_path;
 	}
 	if($last_path === false) {
-		$last_path = $this->last_browse_path;
+		$last_path = $this->last_path;
 	}
 	if($mode === false) {
 		$mode = $this->action;
 	}
 	$initial_contents = $contents;
 	$local_scrape_path = life::local_path($path, 'scrape');
-	//print('$path, $local_scrape_path: ');var_dump($path, $local_scrape_path);
+	//print('$path, $local_scrape_path, $file_type, $contents at start of digest: ');var_dump($path, $local_scrape_path, $file_type, $contents);
 	life::save_if($local_scrape_path, $contents, $initial_contents);
 	if($this->debug) {
 		if(!file_exists($local_scrape_path)) {
@@ -983,7 +1380,12 @@ function digest($contents, $file_type = false, $path = false, $last_path = false
 	
 	//print('$file_type, $path, $last_path, $mode, $contents in digest: ');var_dump($file_type, $path, $last_path, $mode, $contents);
 	$site_root = life::site_root_from_path($path, $last_path);
-	if($file_type === 'js') {
+	if($file_type === 'xml') {
+		// would be natural to do. RSS for one, and XML is well-structured
+		if($this->debug) {
+			life::warning_once('hmm, maybe interesting data in this XML file!');
+		}
+	} elseif($file_type === 'js') {
 		// could do
 		//preg_match_all('/"http[^"]+"/is', $contents, $matches);
 		// but for the moment do nothing since a parser is really needed to determine which resources to grab and how to modify the contents
@@ -1003,11 +1405,12 @@ function digest($contents, $file_type = false, $path = false, $last_path = false
 			}/* elseif($path_in_code[0] === '/') {
 				$download_path = $site_root . $path_in_code;
 			} elseif(strpos($path_in_code, '://') === false) {
-				$download_path = life::fileless_path($this->browse_path) . $path_in_code;
+				$download_path = life::fileless_path($this->current_path) . $path_in_code;
 			} else {
 				$download_path = $path_in_code;
 			}*/
 			$download_path = life::absolutize_path($path_in_code);
+			//print('css file in digest $path_in_code, $download_path: ');var_dump($path_in_code, $download_path);
 			if($mode === 'scrape') {
 				life::scrape_decide($download_path);
 			} else {
@@ -1043,10 +1446,12 @@ function digest($contents, $file_type = false, $path = false, $last_path = false
 		foreach($matches[0] as $index => $value) {
 			// if this external content already has metadata, just leave it and assume the CRC and data checking will be written within a year!
 			$path_in_code = life::normalize_path(life::filename_decode($matches[5][$index][0]));
-			//print('$value, $path_in_code: ');var_dump($value, $path_in_code);
+			//print('link|script|img $value, $path_in_code: ');var_dump($value, $path_in_code);
 			if(!life::is_browser_content($path_in_code)) {
+				//print('isn\'t browser content<br />' . PHP_EOL);
 				continue;
 			}
+			//print('is browser content<br />' . PHP_EOL);
 			if(substr($path_in_code, 0, 6) === 'cache/') { // leave it
 				if(!$this->debug) {
 					continue;
@@ -1055,11 +1460,18 @@ function digest($contents, $file_type = false, $path = false, $last_path = false
 			}/* elseif($path_in_code[0] === '/') {
 				$download_path = $site_root . $path_in_code;
 			} elseif(strpos($path_in_code, '://') === false) {
-				$download_path = life::fileless_path($this->browse_path) . $path_in_code;
+				$download_path = life::fileless_path($this->current_path) . $path_in_code;
 			} else {
 				$download_path = $path_in_code;
 			}*/
 			$download_path = life::absolutize_path($path_in_code);
+			//print('html file 1 in digest $path_in_code, $download_path: ');var_dump($path_in_code, $download_path);
+			if($this->debug) {
+				if(strpos($download_path, 'https://img/') !== false) {
+					print('link|script|img $value, $download_path: ');var_dump($value, $download_path);
+					life::fatal_error('image path not properly handled');
+				}
+			}
 			if($mode === 'scrape') {
 				life::scrape_decide($download_path);
 			} else {
@@ -1115,11 +1527,12 @@ function digest($contents, $file_type = false, $path = false, $last_path = false
 			}/* elseif($path_in_code[0] === '/') {
 				$download_path = $site_root . $path_in_code;
 			} elseif(strpos($path_in_code, '://') === false) {
-				$download_path = life::fileless_path($this->browse_path) . $path_in_code;
+				$download_path = life::fileless_path($this->current_path) . $path_in_code;
 			} else {
 				$download_path = $path_in_code;
 			}*/
 			$download_path = life::absolutize_path($path_in_code);
+			//print('html file 2 in digest $path_in_code, $download_path: ');var_dump($path_in_code, $download_path);
 			if($mode === 'scrape') {
 				life::scrape_decide($download_path);
 			} else {
@@ -1133,8 +1546,8 @@ function digest($contents, $file_type = false, $path = false, $last_path = false
 			}
 		}
 		
-		preg_match_all('/<(a|form)([^>]*?)\s+(href|action)=("|\')([^"\']*?)\4([^>]*?)>/is', $contents, $matches);
-		//var_dump($matches);exit(0);
+		preg_match_all('/<(area|a|form)([^>]*?)\s+(href|action)=("|\')([^"\']*?)\4([^>]*?)>/is', $contents, $matches);
+		//print('$matches looking for (a|form) references in digest: ');var_dump($matches);//exit(0);
 		foreach($matches[0] as $index => $value) {
 			$path_in_code = life::normalize_path(life::filename_decode($matches[5][$index]));
 			if($path_in_code[0] === '#') { // ignore anchors
@@ -1155,17 +1568,18 @@ function digest($contents, $file_type = false, $path = false, $last_path = false
 			}/* elseif($path_in_code[0] === '/') {
 				$download_path = $site_root . $path_in_code;
 			} elseif(strpos($path_in_code, '://') === false) {
-				$download_path = life::fileless_path($this->browse_path) . $path_in_code;
+				$download_path = life::fileless_path($this->current_path) . $path_in_code;
 			} else {
 				$download_path = $path_in_code;
 			}*/
 			$download_path = life::absolutize_path($path_in_code);
 			//print('$value, $mode at href in digest: ');var_dump($value, $mode);
+			//print('html file 3 in digest $path_in_code, $download_path: ');var_dump($path_in_code, $download_path);
 			if($mode === 'scrape') {
 				life::scrape_decide($download_path);
 			} else {
 				$local_path = life::local_path($download_path);
-				$contents = str_replace($value, '<' . $matches[1][$index] . $matches[2][$index] . ' ' . $matches[3][$index] . '=' . $matches[4][$index] . 'do.php?action=browse&path=' . life::query_encode($path_in_code) . '&last_path=' . life::query_encode($this->browse_path) . $matches[4][$index] . $matches[6][$index] . '>', $contents);
+				$contents = str_replace($value, '<' . $matches[1][$index] . $matches[2][$index] . ' ' . $matches[3][$index] . '=' . $matches[4][$index] . 'do.php?action=browse&path=' . life::query_encode($path_in_code) . '&last_path=' . life::query_encode($this->current_path) . $matches[4][$index] . $matches[6][$index] . '>', $contents);
 			}
 		}
 		// other mods? other content?
@@ -1173,29 +1587,31 @@ function digest($contents, $file_type = false, $path = false, $last_path = false
 	}
 	$local_cache_path = life::local_path($path, 'browse');
 	//print('$local_cache_path: ');var_dump($local_cache_path);
-	life::save_if($local_cache_path, $contents, $initial_contents);
-	if($this->debug && !file_exists($local_cache_path)) {
-		life::fatal_error('debug error file not saving to cache in digest');
-	}
-	if($mode === 'browse' && $file_type === 'html') {
-		// warn if using proprietary or non-open source
-		$open_source = true;
-		if(strpos($contents, '"http') !== false) {
-			$open_source = false;
+	if($mode === 'browse') {
+		life::save_if($local_cache_path, $contents, $initial_contents);
+		if($this->debug && !file_exists($local_cache_path)) {
+			life::fatal_error('debug error file not saving to cache in digest');
 		}
-		if($open_source) {
-			foreach($this->server_side_language_file_extensions as $file_extension) {
-				//if(preg_match('/' . $file_extension . '[^\w]/is', $contents, $matches)) {
-				if(preg_match('/\.' . $file_extension . '[^\w]/is', $contents, $matches)) {
-					$open_source = false;
-					break;
+		if($file_type === 'html') {
+			// warn if using proprietary or non-open source
+			$open_source = true;
+			if(strpos($contents, '"http') !== false) {
+				$open_source = false;
+			}
+			if($open_source) {
+				foreach($this->server_side_language_file_extensions as $file_extension) {
+					//if(preg_match('/' . $file_extension . '[^\w]/is', $contents, $matches)) {
+					if(preg_match('/\.' . $file_extension . '[^\w]/is', $contents, $matches)) {
+						$open_source = false;
+						break;
+					}
 				}
 			}
-		}
-		// icons or buttons
-		if(!$open_source) {
-			//$contents = str_replace('</body>', '<div style="z-index: 10; position: absolute; bottom: 50; right: 50;" title="Closed source code! Some elements may not work.">❗</div></body>', $contents);
-			$contents = life::append($contents, '<div style="z-index: 10; position: absolute; bottom: 50; right: 50;" title="Closed source code! Some elements may not work.">❗</div>', $contents);
+			// icons or buttons
+			if(!$open_source) {
+				//$contents = str_replace('</body>', '<div style="z-index: 10; position: absolute; bottom: 50; right: 50;" title="Closed source code! Some elements may not work.">❗</div></body>', $contents);
+				$contents = life::append($contents, '<div style="z-index: 10; position: absolute; bottom: 50; right: 50;" title="Closed source code! Some elements may not work.">❗</div>', $contents);
+			}
 		}
 	}
 	return $contents;
@@ -1203,13 +1619,39 @@ function digest($contents, $file_type = false, $path = false, $last_path = false
 }
 
 function scrape_decide($download_path) {
+	//print('$download_path in scape_decide(): ');var_dump($download_path);
+	if($this->debug) {
+		if(strpos($download_path, '://') === false) {
+			print('$download_path: ');var_dump($download_path);
+			life::fatal_error('missing a protocol on $download_path');
+		}
+	}
 	if($this->files_scraped[$download_path]) { // it was already scraped
+		//print('file was already scraped.<br />' . PHP_EOL);
 		return false;
 	} elseif($this->files_to_scrape[$download_path]) { // it's already queued
-		
+		//print('file is already queued.<br />' . PHP_EOL);
 	} elseif($this->domain === life::domain($download_path)) {
+		//print('file added to files_to_scrape.<br />' . PHP_EOL);
+// 		if($this->debug) {
+// 			// do these even work?
+// 			if(strpos($download_path, 'google') !== false) {
+// 				print('$download_path: ');var_dump($download_path);
+// 				life::fatal_error('maybe should not download this possible google honeypot');
+// 			}
+// 			if(strpos($download_path, 'amazon') !== false || strpos($download_path, 'aws') !== false) {
+// 				print('$download_path: ');var_dump($download_path);
+// 				life::fatal_error('maybe should not download this possible amazon honeypot');
+// 			}
+// 		}
+		foreach($this->paths_disallowed_to_robots as $disallowed_path) {
+			if(strpos($download_path, $disallowed_path) !== false) {
+				return true;
+			}
+		}
 		$this->files_to_scrape[$download_path] = true;
 	} else {
+		//print('something else in scrape_decide.<br />' . PHP_EOL);
 		return false;
 		//print('$download_path, $this->domain, life::domain($download_path): ');var_dump($download_path, $this->domain, life::domain($download_path));
 		//life::fatal_error('should never get here in scrape_decide()');
@@ -1235,7 +1677,17 @@ function save_if($path, $contents = false, $initial_contents = false) {
 	if($initial_contents === false) {
 		$initial_contents = $this->initial_contents;
 	}
-	//print('$path in save_if(): ');var_dump($path);
+	if($this->debug) {
+		if($path == false || $contents == false || $initial_contents == false) {
+			print('$path, $contents, $initial_contents: ');var_dump($path, $contents, $initial_contents);
+			fatal_error('problem with parameters in save_if()');
+		}
+		if(strlen($path) === 0 || strlen($path) === 0 || strlen($path) === 0) {
+			print('$path, $contents, $initial_contents: ');var_dump($path, $contents, $initial_contents);
+			fatal_error('problem with parameters length in save_if()');
+		}
+	}
+	print('$path in save_if(): ');var_dump($path);
 	if($contents !== $initial_contents) {
 		//print('$path, $contents before save in save_if: ');var_dump($path, $contents);exit(0);
 		//print('saved because of new contents in save_if()<br />');
@@ -1253,9 +1705,16 @@ function save_if($path, $contents = false, $initial_contents = false) {
 function save($path, $contents) {
 	life::mkdir_to_root($path);
 	if($this->debug) {
-		print('$path, life::filename_encode($path) in save(): ');var_dump($path, life::filename_encode($path));exit(0);
+		print('$path, life::filename_encode($path) in save(): ');var_dump($path, life::filename_encode($path));//exit(0);
 	}
-	return file_put_contents(life::filename_encode($path), $contents);
+	$put_result = file_put_contents(life::filename_encode($path), $contents);
+	if($this->debug) {
+		if($put_result == false) {
+			print('$path, $contents: ');var_dump($path, $contents);
+			fatal_error('file was not properly saved!');
+		}
+	}
+	return $put_result;
 	//file_put_contents($path, $contents);
 }
 
@@ -1336,35 +1795,51 @@ function file_type_from_contents($contents) {
 	// processing intensive tests in later order and more common patterns earlier for saving processing time
 	// notice that markup languages HTML, XML, RSS etc are case insensitve and so stripos is used. js and css are case sensitive. others?
 	// this may need to become quite sophisticated since you could have something like javascript that just prints a bunch of html, so you'd have to consider code hierarchy across many potential language potentially nesting each other...
+	$file_type = 'txt'; // default to txt... risky?
 	//print('$contents, strpos($contents, \'}]\'), $contents[0], $contents[strlen($contents) - 1]: ');var_dump($contents, strpos($contents, '}]'), $contents[0], $contents[strlen($contents) - 1]);
 	// testing for file type markers at the start of the file
 	if(substr($contents, 0, 3) === 'GIF') {
+		return 'gif';
 		$file_type = 'gif';
 	} elseif(substr($contents, 0, 2) === 'PK') { // Phil Katz zip, PKZIP, which we just generalize to zip these days
+		return 'zip';
 		$file_type = 'zip';
+	//} elseif(substr($contents, 12, 2) === 'ks') {
+	//} elseif(substr($contents, 0, 3) === '�') {
+	} elseif(substr($contents, 0, 3) === chr(0x1F) . chr(0x8B) . chr(0x08)) {
+		return 'gz';
+		$file_type = 'gz';
 	} elseif(substr($contents, 0, 4) === '%PDF') {
+		return 'pdf';
 		$file_type = 'pdf';
 	} elseif(substr($contents, 1, 3) === 'PNG') {
+		return 'png';
 		$file_type = 'png';
 	} elseif(substr($contents, 0, 3) === '  ') {
+		return 'ico';
 		$file_type = 'ico';
 	} elseif(substr($contents, 0, 4) === 'ÿØÿá' || substr($contents, 6, 4) === 'JFIF' || substr($contents, 6, 4) === 'Exif') {
+		return 'jpg';
 		$file_type = 'jpg';
 	//} elseif($contents[0] === '{' && strpos($contents, '}]') !== false) {
 	} elseif(($contents[0] === '{' || $contents[3] === '{') && $contents[strlen(trim($contents)) - 1] === '}') { // there may be a byte order marker
+		return 'json';
 		$file_type = 'json';
 	}
 	// testing for markers in the contents with precedence since we can have complex contents (mixing more than one type) but one identified first is more likely to be the main type of contents
 	// since we are now using precedence, it's important to use the markers that signal a content type change like <script showing js in html or <style showing css in html or .html( showing html in js or :before showing html in css etc
 	$marks_tests_array = array(
-	array('rss' => array(array('i', '<feed'), array('i', '<rss'))),
+	//array('rss' => array(array('i', '<feed'), array('i', '<rss'))), // RSS may not require specific treatment different from its XML superset?
+	array('xml' => array(array('i', '<feed'), array('i', '<rss'))),
 	array('svg' => array(array('i', '<svg'))),
 	array('js' => array(array('', 'document.getElementById('), array('', 'console.log('), array('', 'Math.random'), array('', '.toLowerCase('), array('', 'document.write'), array('', '.css('), array('', '.html('))),
 	array('html' => array(array('i', '<script'), array('i', '<style'), array('i', '<html'), array('i', '/<!DOCTYPE\s+html/is'))),
-	array('js' => array(array('', 'XMLHttpRequest'), array('', 'function('), array('', '.document'), array('', 'document.'))),
-	array('css' => array(array('', 'overflow:'), array('', ':before'), array('', 'width:'), array('', 'color:'))),
+	array('js' => array(array('', 'XMLHttpRequest'), array('', 'function('), array('', '.document'))),
+	//'document.' // ambiguous between js and txt
+	array('css' => array(array('', 'body {'), array('', 'margin-left:'), array('', 'margin-right:'), array('', 'overflow:'), array('', ':before'), array('', 'width:'), array('', 'color:'))),
 	//'position:' // ambiguous between js and css
 	);
+	$file_type_positions = array();
 	foreach($marks_tests_array as $marks_test) {
 		foreach($marks_test as $possible_file_type => $tests) {
 			foreach($tests as $index => $parameters) {
@@ -1384,7 +1859,7 @@ function file_type_from_contents($contents) {
 	}
 	ksort($file_type_positions);
 	foreach($file_type_positions as $position => $file_type) { break; }
-	if($file_type === false) {
+	if($file_type == false) {
 		print('$contents, $file_type: ');var_dump($contents, $file_type);
 		life::fatal_error('did not determine file type by contents');
 	}
@@ -1519,6 +1994,10 @@ function filename_decode($string) {
 	return $string;
 }
 
+function get_by_request($variable) {
+	return life::query_decode($_REQUEST[$variable]);
+}
+
 function query_encode($string) {
 	//var_dump(urlencode('&'));exit(0);
 	$string = str_replace('&', '%26', $string);
@@ -1527,6 +2006,25 @@ function query_encode($string) {
 
 function query_decode($string) {
 	$string = str_replace('%26', '&', $string);
+	return $string;
+}
+
+function query_clean($string) {
+	// would maybe like to use parse_url
+	// probably want to urlencode()
+	$query_position = strpos($string, '?') + 1;
+	if($query_position === false) {
+		$query_position = 0;
+	}
+	$query_part = substr($string, $query_position);
+	$query_part = str_replace(' ', '+', $query_part);
+	$string = substr($string, 0, $query_position) . $query_part;
+	return $string;
+}
+
+function query_dirty($string) {
+	life::fatal_error('probably do not use query_dirty');
+	$string = str_replace('+', ' ', $string);
 	return $string;
 }
 

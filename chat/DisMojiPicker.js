@@ -61,11 +61,17 @@
         return this;
     }
 
-   $.fn.picker = function(emoji) {
-       $('.picker-emoji-content span').click(function(e) {
-            emoji($($(this).children()).attr('alt'));
-       })
-   }
+    $.fn.picker = function(emoji) {
+        $('.picker-emoji-content span').click(function(e) {
+            //emoji($($(this).children()).attr('alt'));
+            //console.log(emoji);
+            //alert('uh test3');
+            //return 'uh test2';
+            //alert($(this).html());
+            //console.log($(this).html());
+            $('#message').append($(this).html());
+        })
+    }
 
 
 })(jQuery);

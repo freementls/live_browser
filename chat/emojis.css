@@ -1,38 +1,59 @@
-#emojis { z-index: 100; display: none; }
+#emojis { z-index: 100; display: none; position: fixed; bottom: 79%; height: 79%; /*border: 1px solid blue;*/ width: 400px; opacity: 0.7; }
 
 #emojis * {
     padding: 0;
     margin: 0;
-    box-sizing: border-box;
+    /*box-sizing: border-box;*/
+    font-size: 110%;
+}
+
+.emoji-selectables {
+    font-size: 130% !important;
 }
 
 #emojis img {
     display: block;
 }
 
-.emoji-picker {
-    background-color: #303841;
-    background-color: #ffffff;
-    width: 400px;
-    margin: 50px;
-    border-radius: 5px;
-    height: 400px;
-    display: flex;
-}
-
 .emoji-selectables {
-    background-color: #212427;
-    background-color: #eeeeee;
-    width: 45px;
+    /*background-color: #212427;
+    background-color: #eeeeee;*/
+    background-color: #663300; /* brown tree trunk */
+    /*width: 200px;*/
     height: 100%;
-    padding: 10px 15px;
+    /*padding: 100px 150px;*/
     display: flex;
     flex-direction: column;
     align-items: center;
+    opacity: 1;
+    border-radius: 4px;
 }
 
+.emoji-smileys, .emoji-gestures, .emoji-peoples, .emoji-symbos, .emoji-nature, .emoji-food, .emoji-activity, .emoji-travel {
+    margin-left: 4px !important;
+    margin-right: 4px !important;
+}
+
+/*.picker-emoji-sel span {
+    margin: 0 12px 0 12px;
+    width: 100px;
+}*/
+
+.emoji-picker {
+    /*background-color: #303841;
+    background-color: #ffffff;*/
+    width: 420px;
+    margin: 50px;
+    border-radius: 5px;
+    /*height: 400px;*/
+    height: 780%; /* arcane magic */
+    display: flex;
+}
+
+
 .emoji-selectables span {
-    margin-bottom: 7px;
+    /*margin-bottom: 7px;*/
+    margin-bottom: 0;
     cursor: pointer;
 }
 
@@ -47,18 +68,23 @@
     align-items: center;
     filter: grayscale(100%)
 }
+.emoji-content {
+    opacity: 0.7;
+}
 
-.emoji-content div {
-    width: 100%;
+ .emoji-content div {
+/*     width: 100%; */
 
     flex-wrap: wrap;
     justify-content: center;
-    padding: 5px;
+    /*padding: 5px;*/
+    padding: 0;
 }
 
 .emoji-content span {
     display: block;
-    padding: 5px;
+    /*padding: 5px;*/
+    padding: 0;
     cursor: pointer;
 }
 
