@@ -10,7 +10,7 @@ you are encouraged to upload this to your server, to be able to chat with any ot
 
 Version 0.0.1
 
-This chat is: 
+This chat is: <br />
 . uncensored<br />
 . unrestricted<br />
 . unsecured<br />
