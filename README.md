@@ -11,18 +11,18 @@ you are encouraged to upload this to your server, to be able to chat with any ot
 Version 0.0.1
 
 This chat is: 
-. uncensored
-. unrestricted
-. unsecured
-. unlimited
-. cross-platform
-. decentralized
-. no accounts
+. uncensored<br />
+. unrestricted<br />
+. unsecured<br />
+. unlimited<br />
+. cross-platform<br />
+. decentralized<br />
+. no accounts<br />
 . free
 
 Known bugs
 
-. can memory leak
+. can memory leak<br />
 . emojis sometimes do not work after input
 
 Coming soon: research tools, free browsing, improved internet architecture building and communitizing.
